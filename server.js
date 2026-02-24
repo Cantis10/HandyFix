@@ -13,7 +13,7 @@ app.get('/users', (req, res) => {
 });
 
 app.get('/test', (req, res) => {
-  res.json({ messages: "Hello!" });
+  res.json({ messages: "Vercel says: Hello! I am running off this mfin server!" });
 })
 
 app.listen(PORT, () => {
