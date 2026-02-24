@@ -1,5 +1,4 @@
 const express = require('express');
-const serverless = require('serverless-http');
 const app = express();
 
 app.use(express.json());
@@ -10,8 +9,10 @@ app.get('/', (req, res) => {
 });
 
 
-app.get('/test', (req, res) => {
+app.get('/api/test', (req, res) => {
   res.json({ message: "Hello /test JSON!" });
 });
 
-module.exports.handler = serverless(app);
+app.listen(3000, () => {
+  console.log("App on port " + process.env.PORT);
+});
