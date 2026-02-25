@@ -21,6 +21,11 @@ app.get('/test', (req, res) => {
 app.post('/post', (req, res) => {
   const data = req.body;
 
+    if (data.message) {
+    data.message = data.message.toUpperCase() + " AND I LOVE VAGINA!!!"; 
+  }
+
+
   res.json(data);
 })
 
