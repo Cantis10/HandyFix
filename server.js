@@ -22,7 +22,7 @@ app.post('/post', (req, res) => {
   const data = req.body;
 
     if (data.message) {
-    data.message = data.message.toUpperCase() + " AND I LOVE VAGINA!!!"; 
+    data.message = data.message.toUpperCase() + " AND I LOVE YOU!!!"; 
   }
 
 
