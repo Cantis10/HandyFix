@@ -16,6 +16,12 @@ app.get('/test', (req, res) => {
   res.json({ messages: "Vercel says: Hello! I am running off this mfin server!" });
 })
 
+app.post('/post', (req, res) => {
+  const data = req.body;
+  req.message = 'hiii!';
+  res.json(data);
+})
+
 app.listen(PORT, () => {
   console.log(`Server running at http://localhost:${PORT}`);
 });
