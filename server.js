@@ -85,6 +85,10 @@ app.post('/api/login', async (req, res) => {
 });
 
 app.post('/api/register', async (req, res) => {
+
+  let x = 0;
+
+  console.log("test " + x++);
   const db = getDbClient();
   /*
   CREATE TABLE users (
@@ -103,14 +107,80 @@ type VARCHAR(100) NOT NULL DEFAULT 'user' --user, contractor, admin
 );
 
   */
+ console.log("test " + x++);
 
   try {
     const { first_name, last_name, age, email, password, contact_number, address } = req.body;
+
+    console.log("test " + x++);
+
+    if(!first_name || !last_name || !email || !password) {
+      return res.status(400).json({ error: "Missing required fields" });
+    }
+
+    console.log("test " + x++);
+
+    if(age && (isNaN(age) || age < 0)) {
+      return res.status(400).json({ error: "Invalid age" });
+    }
+
+    console.log("test " + x++);
+
+    if(contact_number && !/^\+?[0-9]{7,15}$/.test(contact_number)) {
+      return res.status(400).json({ error: "Invalid contact number" });
+    }
+
+    console.log("test " + x++);
+
+    if(address && address.length > 255) {
+      return res.status(400).json({ error: "Address too long" });
+    }
+
+    console.log("test " + x++);
+
+    if(email.length > 255) {
+      return res.status(400).json({ error: "Email too long" });
+    }
+
+    console.log("test " + x++);
+
+    if(password.length > 255) {
+      return res.status(400).json({ error: "Password too long" });
+    }
+
+    console.log("test " + x++);
+
+    if(first_name.length > 100 || last_name.length > 100) {
+      return res.status(400).json({ error: "Name too long" });
+    }
+
+    console.log("test " + x++);
+
+    if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      return res.status(400).json({ error: "Invalid email format" });
+    }
+
+    console.log("test " + x++);
+
+    if(password.length < 6) {
+      return res.status(400).json({ error: "Password must be at least 6 characters" });
+    }
+
+    console.log("test " + x++);
+
+    if(first_name.length < 2 || last_name.length < 2) {
+      return res.status(400).json({ error: "Name must be at least 2 characters" });
+    }
+
+    console.log("test " + x++);
+    
 
     const result = await db.execute({
       sql: "INSERT INTO users (first_name, last_name, age, email, password, creation_date, contact_number, address) VALUES (?, ?, ?, ?, ?, date('now'), ?, ?)",
       args: [first_name, last_name, age, email, password, contact_number, address],
     });
+
+    console.log("test " + x++);
 
     res.json({ success: true, userId: result.lastInsertRowid });
   } catch (err) {
