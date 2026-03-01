@@ -84,6 +84,44 @@ app.post('/api/login', async (req, res) => {
   }
 });
 
+app.post('/api/register', async (req, res) => {
+  const db = getDbClient();
+  /*
+  CREATE TABLE users (
+id INTEGER PRIMARY KEY AUTOINCREMENT,
+first_name VARCHAR(100) NOT NULL,
+last_name VARCHAR(100) NOT NULL,
+age INT,
+email VARCHAR(255) UNIQUE,
+password VARCHAR(255) NOT NULL,
+creation_date DATE,
+contact_number VARCHAR(20),
+address VARCHAR(255),
+latitude DECIMAL(9,6),
+longitude DECIMAL(9,6),
+type VARCHAR(100) NOT NULL DEFAULT 'user' --user, contractor, admin
+);
+
+  */
+
+  try {
+    const { first_name, last_name, age, email, password, contact_number, address } = req.body;
+
+    const result = await db.execute({
+      sql: "INSERT INTO users (first_name, last_name, age, email, password, creation_date, contact_number, address) VALUES (?, ?, ?, ?, ?, date('now'), ?, ?)",
+      args: [first_name, last_name, age, email, password, contact_number, address],
+    });
+
+    res.json({ success: true, userId: result.lastInsertRowid });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Server error" });
+  }
+});
+    
+    
+
+
 app.listen(PORT, () => {
   console.log(`Server running at http://localhost:${PORT}`);
 });
