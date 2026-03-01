@@ -1,14 +1,13 @@
-const express = require('express');
+const express = require("express");
 const app = express();
-require('dotenv').config();
-const { createClient } = require('@libsql/client');
+require("dotenv").config();
+const { createClient } = require("@libsql/client");
 
 const PORT = process.env.PORT || 3000;
 
-
 function getDbClient() {
   if (!process.env.TURSO_LINK || !process.env.TURSO_TOKEN) {
-    throw new Error('Database not configured');
+    throw new Error("Database not configured");
   }
 
   return createClient({
@@ -17,46 +16,48 @@ function getDbClient() {
   });
 }
 
-
 app.use(express.json());
 
-app.get('/', (req, res) => {
-  res.json({ message: 'Hello, JSON world!' });
+app.get("/", (req, res) => {
+  res.json({ message: "Hello, JSON world!" });
 });
 
-app.get('/users', (req, res) => {
-  res.json({ users: ['Alice', 'Bob', 'Charlie'] });
+app.get("/users", (req, res) => {
+  res.json({ users: ["Alice", "Bob", "Charlie"] });
 });
 
-app.get('/test', (req, res) => {
-  res.json({ messages: "Vercel says: Hello! I am running off this mfin server!" });
-})
+app.get("/test", (req, res) => {
+  res.json({
+    messages: "Vercel says: Hello! I am running off this mfin server!",
+  });
+});
 
-app.post('/post', (req, res) => {
+app.post("/post", (req, res) => {
   const data = req.body;
 
-    if (data.message) {
+  if (data.message) {
     data.message = data.message.toUpperCase() + " AND I LOVE YOU!!!";
   }
 
-
   res.json(data);
-})
+});
 
-app.get('/test-db', async (req, res) => {
-  const db =
-  getDbClient(); 
+app.get("/test-db", async (req, res) => {
+  const db = getDbClient();
   try {
-    const result = await db.execute('SELECT 1 as result');
-    res.json({ success: true, message: 'Connected to Turso DB!', data: result.rows });
+    const result = await db.execute("SELECT 1 as result");
+    res.json({
+      success: true,
+      message: "Connected to Turso DB!",
+      data: result.rows,
+    });
   } catch (err) {
-    console.error('❌ Connection failed:', err.message);
+    console.error("❌ Connection failed:", err.message);
     res.status(500).json({ success: false, error: err.message });
   }
 });
 
-app.post('/api/login', async (req, res) => {
-
+app.post("/api/login", async (req, res) => {
   const db = getDbClient();
   try {
     const { email, password } = req.body;
@@ -77,18 +78,15 @@ app.post('/api/login', async (req, res) => {
     }
 
     res.json({ success: true, user: { id: user.id, email: user.email } });
-
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: "Server error" });
   }
 });
 
-app.post('/api/register', async (req, res) => {
+app.post("/api/register", async (req, res) => {
+  console.log("test 1");
 
-  let x = 0;
-
-  console.log("test " + x++);
   const db = getDbClient();
   /*
   CREATE TABLE users (
@@ -107,80 +105,82 @@ type VARCHAR(100) NOT NULL DEFAULT 'user' --user, contractor, admin
 );
 
   */
- console.log("test " + x++);
 
   try {
-    const { first_name, last_name, age, email, password, contact_number, address } = req.body;
+    const {
+      first_name,
+      last_name,
+      age,
+      email,
+      password,
+      contact_number,
+      address,
+    } = req.body;
 
-    console.log("test " + x++);
+    let contactStr = contact_number?.toString();
 
-    if(!first_name || !last_name || !email || !password) {
+    console.log(req.body);
+
+    if (
+      !first_name ||
+      !last_name ||
+      !age ||
+      !email ||
+      !password ||
+      !contact_number
+    ) {
+      console.log("missing required fields");
       return res.status(400).json({ error: "Missing required fields" });
     }
 
-    console.log("test " + x++);
-
-    if(age && (isNaN(age) || age < 0)) {
+    if (age && (isNaN(age) || age < 0)) {
+      console.log("invalid age");
       return res.status(400).json({ error: "Invalid age" });
     }
 
-    console.log("test " + x++);
-
-    if(contact_number && !/^\+?[0-9]{7,15}$/.test(contact_number)) {
+    if (contactStr && !/^\+?[0-9]{7,15}$/.test(contactStr)) {
+      console.log("invalid contact number");
       return res.status(400).json({ error: "Invalid contact number" });
     }
 
-    console.log("test " + x++);
-
-    if(address && address.length > 255) {
-      return res.status(400).json({ error: "Address too long" });
-    }
-
-    console.log("test " + x++);
-
-    if(email.length > 255) {
+    if (email.length > 255) {
+      console.log("email too long");
       return res.status(400).json({ error: "Email too long" });
     }
 
-    console.log("test " + x++);
-
-    if(password.length > 255) {
+    if (password.length > 255) {
+      console.log("password too long");
       return res.status(400).json({ error: "Password too long" });
     }
 
-    console.log("test " + x++);
-
-    if(first_name.length > 100 || last_name.length > 100) {
+    if (first_name.length > 100 || last_name.length > 100) {
+      console.log("name too long");
       return res.status(400).json({ error: "Name too long" });
     }
 
-    console.log("test " + x++);
-
-    if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      console.log("invalid email format");
       return res.status(400).json({ error: "Invalid email format" });
     }
 
-    console.log("test " + x++);
-
-    if(password.length < 6) {
-      return res.status(400).json({ error: "Password must be at least 6 characters" });
+    if (password.length < 6) {
+      console.log("password too short");
+      return res
+        .status(400)
+        .json({ error: "Password must be at least 6 characters" });
     }
 
-    console.log("test " + x++);
-
-    if(first_name.length < 2 || last_name.length < 2) {
-      return res.status(400).json({ error: "Name must be at least 2 characters" });
+    if (first_name.length < 2 || last_name.length < 2) {
+      console.log("name too short");
+      return res
+        .status(400)
+        .json({ error: "Name must be at least 2 characters" });
     }
-
-    console.log("test " + x++);
-    
 
     const result = await db.execute({
       sql: "INSERT INTO users (first_name, last_name, age, email, password, creation_date, contact_number, address) VALUES (?, ?, ?, ?, ?, date('now'), ?, ?)",
-      args: [first_name, last_name, age, email, password, contact_number, address],
+      args: [first_name, last_name, age, email, password, contactStr, address],
     });
-
-    console.log("test " + x++);
 
     res.json({ success: true, userId: result.lastInsertRowid });
   } catch (err) {
@@ -188,9 +188,6 @@ type VARCHAR(100) NOT NULL DEFAULT 'user' --user, contractor, admin
     res.status(500).json({ error: "Server error" });
   }
 });
-    
-    
-
 
 app.listen(PORT, () => {
   console.log(`Server running at http://localhost:${PORT}`);
