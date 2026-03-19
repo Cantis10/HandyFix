@@ -1,0 +1,50 @@
+PUBLIC (/){
+    /
+
+    /login
+
+    /register
+}
+
+USER (/user){
+    /user/
+
+    /user/booking
+
+    /user/repairs/:data1
+
+    /user/repairs/:data1/:data2
+
+    /user/initiaterepair/:data1/:data2
+}
+
+
+ ADMIN (/admin){
+    /admin/
+
+    /admin/service
+
+    /admin/contractor
+
+    /admin/customers 
+
+    /admin/assignment
+
+    /admin/messages
+
+    /admin/reports
+
+    /admin/settings
+}
+
+CONTRACTOR (/contractor){
+
+    /contractor/
+
+    /contractor/job
+
+    /contractor/profile
+
+}
+
+

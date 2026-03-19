@@ -2,13 +2,13 @@ const express = require("express");
 const app = express.Router();
 const db = require("../routes/database");
 
-app.get("/test", (req, res) => {
+app.get("/test/test", (req, res) => {
   res.json({
     messages: "HOST says: Hello! I am running off this mfin server!",
   });
 });
 
-app.post("/post", (req, res) => {
+app.post("/test/post", (req, res) => {
   const data = req.body;
 
   if (data.message) {
@@ -33,9 +33,7 @@ app.get("/test-db", async (req, res) => {
   }
 });
 
-app.get("/", (req, res) => {
-  res.json({ message: "Hello, JSON world!" });
-});
+
 
 
 module.exports = app;

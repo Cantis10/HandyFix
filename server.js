@@ -17,10 +17,22 @@ const registerRouter = require("./routes/register");
 app.use("/api/register",registerRouter);
 
 const testRouter =require("./routes/test");
-app.use("/test-db", testRouter);
-app.use("/post", testRouter);
-app.use("/test", testRouter);
-app.use("/", testRouter);
+app.use("/api/test", testRouter);
+
+const userPagesRouter = require("./routes/pages/userPages");
+app.use("/user", userPagesRouter);
+
+const publicPagesRouter = require("./routes/pages/publicPages");
+app.use("/", publicPagesRouter);
+
+const adminPagesRouter = require("./routes/pages/adminPages");
+app.use("/admin", adminPagesRouter);
+
+const contractPagesRouter = require("./routes/pages/contractPages");
+app.use("/contract", contractPagesRouter);
+
+
+
 app.listen(PORT, () => {
   console.log(`Server running at http://localhost:${PORT}`);
 });
