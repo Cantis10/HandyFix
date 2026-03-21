@@ -1,0 +1,455 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Settings</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+  <style>
+    :root {
+      --maroon:      #7a1d1d;
+      --dark-orange: #c2410c;
+      --dirty-white: #f5f0e6;
+      --black:       #111;
+      --gray:        #555;
+      --light-gray:  #ddd;
+      --green:       #2e7d32;
+    }
+
+    * { margin:0; padding:0; box-sizing:border-box; }
+
+    body {
+      font-family: system-ui, -apple-system, sans-serif;
+      background: #EDF2F4;
+      color: var(--black);
+      min-height: 100vh;
+    }
+
+    .topbar {
+      background: var(--maroon);
+      color: white;
+      height: 64px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 2rem;
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      z-index: 1000;
+      box-shadow: 0 3px 10px rgba(0,0,0,0.2);
+    }
+
+    .logo       { font-weight: bold; font-size: 1.5rem; }
+    .panel-name { font-size: 1.35rem; letter-spacing: 1.2px; }
+    .right      { display: flex; align-items: center; gap: 1.2rem; }
+    .bell       { font-size: 1.4rem; cursor: pointer; }
+    .profile    { font-size: 1.15rem; }
+    .hamburger  { font-size: 1.7rem; cursor: pointer; display: none; color: white; }
+
+    .sidebar {
+      width: 240px;
+      background: var(--dark-orange);
+      color: white;
+      height: calc(100vh - 64px);
+      position: fixed;
+      top: 64px;
+      left: 0;
+      overflow-y: auto;
+      transition: transform 0.3s ease;
+    }
+
+    .sidebar ul {
+      list-style: none;
+      padding: 1.2rem 0;
+    }
+
+    .sidebar li {
+      padding: 1rem 1.6rem;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+
+    .sidebar li:hover,
+    .sidebar li.active {
+      background: rgba(0,0,0,0.25);
+    }
+
+    .sidebar i {
+      margin-right: 12px;
+      width: 22px;
+      text-align: center;
+    }
+
+    .main {
+      margin-left: 240px;
+      margin-top: 64px;
+      padding: 2rem;
+      min-height: calc(100vh - 64px);
+    }
+
+    h1 {
+      color: var(--maroon);
+      margin-bottom: 2rem;
+      font-size: 2rem;
+    }
+
+    .cards {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1.5rem;
+    }
+
+    .card {
+      background: #D9D9D9;
+      border-radius: 10px;
+      padding: 1.6rem;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    }
+
+    .card h2 {
+      color: black;
+      font-size: 1.3rem;
+      margin-bottom: 0.8rem;
+    }
+
+    .card input {
+      width: 100%;
+      padding: 0.6rem;
+      margin: 0.4rem 0 1rem;
+      border: 1px solid var(--light-gray);
+      border-radius: 6px;
+    }
+    .btn {
+      background: var(--dark-orange);
+      color: white;
+      border: none;
+      padding: 0.55rem 1.1rem;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 0.95rem;
+    }
+
+    .btn:hover {
+      background: #a0360a;
+    }
+
+    .btn-group {
+      display: flex;
+      gap: 0.5rem;
+      margin-top: 0.8rem;
+    }
+
+    .btn.secondary {
+      background: transparent;
+      color: var(--gray);
+    }
+
+    .btn.secondary:hover {
+      color: var(--maroon)
+    }
+
+    .center {
+      text-align: center;
+      margin-top: 1rem;
+    }
+
+    .category-list {
+      list-style: none;
+      padding-left: 0;
+    }
+
+    .category-list li {
+      padding: 0.4rem 0;
+    }
+
+    .toggle-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin: 0.8rem 0;
+    }
+
+    .switch {
+      position: relative;
+      display: inline-block;
+      width: 45px;
+      height: 22px;
+    }
+
+    .switch input {
+      display: none;
+    }
+
+    .slider {
+      position: absolute;
+      cursor: pointer;
+      background: var(--gray);
+      border-radius: 22px;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      transition: 0.3s;
+    }
+
+    .slider:before {
+      position: absolute;
+      content: "";
+      height: 16px;
+      width: 16px;
+      left: 3px;
+      bottom: 3px;
+      background: white;
+      border-radius: 50%;
+      transition: 0.3s;
+    }
+
+    input:checked + .slider {
+      background: var(--green);
+    }
+
+    input:checked + .slider:before {
+      transform: translateX(23px);
+    }
+
+    @media (max-width: 992px) {
+      .sidebar {
+        transform: translateX(-100%);
+      }
+      .sidebar.open {
+        transform: translateX(0);
+      }
+      .main {
+        margin-left: 0;
+      }
+      .hamburger {
+        display: block !important;
+      }
+      .cards {
+        grid-template-columns: 1fr;
+      }
+      .right {
+        gap: 1rem;
+      }
+      .auth-btn {
+        padding: 0.45rem 1rem;
+        font-size: 0.9rem;
+      }
+    }
+  </style>
+</head>
+<body>
+
+<header class="topbar">
+  <div class="logo">HandyFix</div>
+  <div class="panel-name">ADMIN PANEL</div>
+  <div class="right">
+    <i class="fas fa-bell bell"></i>
+    <span class="profile">Admin Name</span>
+
+    <i class="fas fa-bars hamburger" id="menuBtn"></i>
+  </div>
+</header>
+
+<nav class="sidebar" id="sidebar">
+  <ul>
+    <li class="active" data-page="Admin Dashboard.html">
+      <i class="fas fa-tachometer-alt"></i> Dashboard
+    </li>
+    <li data-page="Service Requests.html">
+      <i class="fas fa-list-ul"></i> Requests
+    </li>
+    <li data-page="Contractor.html">
+      <i class="fas fa-hard-hat"></i> Contractors
+    </li>
+    <li data-page="Customer.html">
+      <i class="fas fa-users"></i> Customers
+    </li>
+    <li data-page="Assignment.html">
+      <i class="fas fa-link"></i> Assignments
+    </li>
+    <li data-page="Messages.html">
+      <i class="fas fa-comment-dots"></i> Messages
+    </li>
+    <li data-page="Reports.html">
+      <i class="fas fa-chart-bar"></i> Reports
+    </li>
+    <li data-page="Settings.html">
+      <i class="fas fa-cog"></i> Settings
+    </li>
+    <li data-page="Login.html">
+      <i class="fas fa-sign-out-alt"></i> Logout</li>
+  </ul>
+</nav>
+
+<main class="main">
+  <h1>Settings</h1>
+
+  <div class="cards">
+
+    <div class="card">
+      <h2>Admin Account</h2>
+      <label>Name:</label>
+      <input type="text" id="adminName"value="Admin Name" disabled>
+
+      <label>Email:</label>
+      <input type="email" id="adminEmail" value="admin@example.com" disabled>
+
+      <label>Password:</label>
+      <input type="password" value="********" disabled>
+
+      <div class="btn-group">
+        <button class="btn" onclick="enableEdit()">Edit Profile</button>
+        <button class="btn" onclick="saveProfile()">Save Changes </button>
+        <button class="btn secondary" onclick="showPasswordFields()">Change Password</button>
+      </div>
+
+      <div id="passwordSection" style="display:none; margin-top:1rem;">
+        <label>New Password:</label>
+        <input type="password" id="newPass">
+
+        <label>Confirm Password:</label>
+        <input type="password" id="confirmPass">
+
+        <button class="btn" onclick="savePassword()">Save Password</button>
+      </div>
+      </div>
+
+    <div class="card">
+      <h2>Service Categories</h2>
+      <ul class="category-list">
+        <li>Plumbing </li>
+        <li>Electrical </li>
+        <li>Carpentry </li>
+        <li>Home</li>
+        <li>Tools</li>
+      </ul>
+
+      <div class="center">
+        <a href ="Edit Categories.html">
+          <button class="btn">Edit Categories</button>
+        </a>
+      </div>
+    </div>
+
+    <div class="card">
+    <h2>System Settings</h2>
+
+    <div class="toggle-row">
+      <span>Enable Notifications</span>
+      <label class="switch">
+        <input type="checkbox" checked>
+        <span class="slider"></span>
+      </label>
+    </div>
+
+    <div class="toggle-row">
+      <span>Allow New Contractor Registration</span>
+      <label class="switch">
+        <input type="checkbox">
+        <span class="slider"></span>
+      </label>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>Notification Settings</h2>
+
+    <div class="toggle-row">
+      <span>Job Assignment Alert</span>
+      <label class="switch">
+        <input type="checkbox" checked>
+        <span class="slider"></span>
+      </label>
+    </div>
+
+    <div class="toggle-row">
+      <span>New Request Alert</span>
+      <label class="switch">
+        <input type="checkbox" checked>
+        <span class="slider"></span>
+      </label>
+    </div>
+  </div>
+  </div>
+</main>
+
+<script>
+  document.getElementById('menuBtn').addEventListener('click', () => {
+    document.getElementById('sidebar').classList.toggle('open');
+  });
+
+  document.querySelectorAll('.sidebar li').forEach(item => {
+    item.addEventListener('click', function() {
+      const page = this.getAttribute('data-page');
+      if (page) {
+        window.location.href = page;
+      }
+    });
+  });
+
+  document.addEventListener('DOMContentLoaded', () => {
+    const currentFile = window.location.pathname.split('/').pop() || 'Settings.html';
+    document.querySelectorAll('.sidebar li').forEach(li => {
+      const page = li.getAttribute('data-page');
+      if (page === currentFile) {
+        li.classList.add('active');
+      } else {
+        li.classList.remove('active');
+      }
+    });
+  });
+
+  function enableEdit() {
+    document.getElementById("adminName").disabled = false;
+    document.getElementById("adminEmail").disabled = false;
+  }
+
+
+  function saveProfile() {
+  const name = document.getElementById("adminName").value;
+  const email = document.getElementById("adminEmail").value;
+
+  if (name === "" || email === "") {
+    alert("Please fill in all fields.");
+    return;
+  }
+
+  document.getElementById("adminName").disabled = true;
+  document.getElementById("adminEmail").disabled = true;
+
+  alert("Profile updated successfully!");
+};
+
+  function showPasswordFields() {
+    const section = document.getElementById("passwordSection");
+    section.style.display = section.style.display === "none" ? "block" : "none";
+  }
+
+  function savePassword() {
+  const newPass = document.getElementById("newPass").value;
+  const confirmPass = document.getElementById("confirmPass").value;
+
+  if (newPass === "" || confirmPass === "") {
+    alert("Please fill in all password fields.");
+    return;
+  }
+
+  if (newPass !== confirmPass) {
+    alert("Passwords do not match.");
+    return;
+  }
+
+  alert("Password successfully changed!");
+
+  document.getElementById("newPass").value = "";
+  document.getElementById("confirmPass").value = "";
+
+  document.getElementById("passwordSection").style.display = "none";
+};
+</script>
+
+</body>
+</html>
