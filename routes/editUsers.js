@@ -13,7 +13,7 @@ app.get("/AllUsers", async (req, res) => {
   }
 });
 
-app.get("/EditUsers/:id", async (req, res) => {
+app.get("/fetchUser/:id", async (req, res) => {
   console.log(req.params.id);
   try {
     const userId = req.params.id;
@@ -102,12 +102,10 @@ app.post("/AddUser", async (req, res) => {
 
     // Validate required fields
     if (!first_name || !last_name || !email || !password || !type) {
-      return res
-        .status(400)
-        .json({
-          error:
-            "Missing required fields: first_name, last_name, email, password, type",
-        });
+      return res.status(400).json({
+        error:
+          "Missing required fields: first_name, last_name, email, password, type",
+      });
     }
 
     // Insert new user (ID will be auto-incremented)

@@ -381,9 +381,9 @@
 
       // Fetch fresh data from API
       try {
-        const response = await fetch(`http://localhost:3000/api/EditUsers/${selectedCustomerId}`);
+        const response = await fetch(`http://localhost:3000/api/fetchUser/${selectedCustomerId}`);
         if (!response.ok) {
-          alert('Error loading user data');
+          alert('Error loading user dataA');
           return;
         }
         const customer = await response.json();

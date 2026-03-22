@@ -34,6 +34,9 @@ app.use("/contract", contractPagesRouter);
 const fetchUsersRouter = require("./routes/editUsers");
 app.use("/api/", fetchUsersRouter);
 
+const fetchTicketsRouter = require("./routes/editTickets");
+app.use("/api/", fetchTicketsRouter);
+
 app.listen(PORT, () => {
   console.log(`Server running at http://localhost:${PORT}`);
 });

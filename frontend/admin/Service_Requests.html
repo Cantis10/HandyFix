@@ -148,6 +148,41 @@
       background: #a0360a;
     }
 
+    .add-ticket-section {
+      background: #fff;
+      border-radius: 10px;
+      padding: 1rem 1.2rem;
+      margin-bottom: 1.5rem;
+      box-shadow: 0 3px 9px rgba(0,0,0,0.08);
+    }
+
+    .add-ticket-section h2 {
+      margin-bottom: 0.8rem;
+      color: var(--maroon);
+      font-size: 1.1rem;
+    }
+
+    .form-row {
+      display: grid;
+      gap: 0.45rem;
+      margin-bottom: 0.8rem;
+    }
+
+    .form-row label {
+      font-size: 0.9rem;
+      color: var(--gray);
+    }
+
+    .form-row input,
+    .form-row textarea,
+    .form-row select {
+      padding: 0.45rem 0.6rem;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      font-size: 0.95rem;
+      width: 100%;
+    }
+
     .actions {
       text-align: center;
       margin-top: 1.5rem;
@@ -216,6 +251,43 @@
 <main class="main">
   <h1>Customer Requests</h1>
 
+  <section class="add-ticket-section">
+    <h2>Add New Ticket</h2>
+    <form id="addTicketForm">
+      <div class="form-row">
+        <label for="userIdInput">Customer ID</label>
+        <input type="number" id="userIdInput" name="user_id" required />
+      </div>
+      <div class="form-row">
+        <label for="orderDateInput">Order Date</label>
+        <input type="date" id="orderDateInput" name="order_date" required />
+      </div>
+      <div class="form-row">
+        <label for="typeInput">Service</label>
+        <input type="text" id="typeInput" name="type" required />
+      </div>
+      <div class="form-row">
+        <label for="subTypeInput">Sub Service</label>
+        <input type="text" id="subTypeInput" name="sub_type" required />
+      </div>
+      <div class="form-row">
+        <label for="descriptionInput">Description</label>
+        <textarea id="descriptionInput" name="description" rows="2"></textarea>
+      </div>
+      <div class="form-row">
+        <label for="stateInput">State</label>
+        <select id="stateInput" name="state">
+          <option value="open">open</option>
+          <option value="assigned">assigned</option>
+          <option value="closed">closed</option>
+          <option value="cancelled">cancelled</option>
+        </select>
+      </div>
+      <button type="submit" class="assign-btn" id="addTicketBtn">Add Ticket</button>
+      <span id="addTicketMessage" style="margin-left:1rem; color: var(--maroon);"></span>
+    </form>
+  </section>
+
   <div class="table-wrapper">
     <table id="requestsTable">
       <thead>
@@ -225,30 +297,12 @@
           <th>Service</th>
           <th>Sub Service</th>
           <th>Location</th>
-          <th>Action</th>
+          <th>Status</th>
         </tr>
       </thead>
-      <tbody>
-        <tr data-id="1023">
-          <td>1023</td>
-          <td>Juan Dela Cruz</td>
-          <td>Plumbing</td>
-          <td>Leak Repair</td>
-          <td>QC</td>
-          <td>Pending</td>
-        </tr>
-        <tr data-id="1024">
-          <td>1024</td>
-          <td>Ana Santos</td>
-          <td>Electrical</td>
-          <td>Light Installation</td>
-          <td>QC</td>
-          <td>Pending</td>
-        </tr>
-  
-      </tbody>
-    <table>
-  </div
+      <tbody id="requestsTbody"></tbody>
+    </table>
+  </div>
   
   <div class="actions">
     <button class="assign-btn" id="assignBtn" disabled>
@@ -271,45 +325,141 @@
     });
   });
 
+  const table = document.getElementById('requestsTable');
+  const tbody = document.getElementById('requestsTbody');
+  const assignBtn = document.getElementById('assignBtn');
+  let selectedRequestId = null;
+
+  async function fetchRequests() {
+    try {
+      const response = await fetch('/api/AllTickets');
+      if (!response.ok) throw new Error('Failed to load requests');
+      const tickets = await response.json();
+      populateTable(tickets);
+    } catch (error) {
+      console.error(error);
+      tbody.innerHTML = '<tr><td colspan="6">Unable to load service requests.</td></tr>';
+    }
+  }
+
+  function populateTable(tickets) {
+    tbody.innerHTML = '';
+
+    if (!tickets || tickets.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="6">No service requests available</td></tr>';
+      assignBtn.disabled = true;
+      assignBtn.textContent = 'Assign Contractor';
+      selectedRequestId = null;
+      return;
+    }
+
+    tickets.forEach(ticket => {
+      const row = document.createElement('tr');
+      row.dataset.id = ticket.id;
+      row.innerHTML = `
+        <td>${ticket.id}</td>
+        <td>${ticket.user_id || 'Unknown'}</td>
+        <td>${ticket.type || ''}</td>
+        <td>${ticket.sub_type || ''}</td>
+        <td>${ticket.order_date || ''}</td>
+        <td>${ticket.state || 'pending'}</td>
+      `;
+      tbody.appendChild(row);
+    });
+
+    selectedRequestId = null;
+    assignBtn.disabled = true;
+    assignBtn.textContent = 'Assign Contractor';
+  }
+
+  const addTicketForm = document.getElementById('addTicketForm');
+  const addTicketMessage = document.getElementById('addTicketMessage');
+
+  addTicketForm.addEventListener('submit', async function(e) {
+    e.preventDefault();
+    addTicketMessage.textContent = '';
+
+    const payload = {
+      user_id: Number(document.getElementById('userIdInput').value),
+      order_date: document.getElementById('orderDateInput').value,
+      type: document.getElementById('typeInput').value.trim(),
+      sub_type: document.getElementById('subTypeInput').value.trim(),
+      description: document.getElementById('descriptionInput').value.trim(),
+      state: document.getElementById('stateInput').value,
+    };
+
+    try {
+      const response = await fetch('/api/AddTicket', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
+
+      if (!response.ok) {
+        const err = await response.json();
+        throw new Error(err.error || 'Could not create ticket');
+      }
+
+      addTicketMessage.style.color = 'green';
+      addTicketMessage.textContent = 'Ticket added successfully.';
+      addTicketForm.reset();
+      await fetchRequests();
+    } catch (error) {
+      console.error(error);
+      addTicketMessage.style.color = 'red';
+      addTicketMessage.textContent = error.message;
+    }
+  });
+
+  table.addEventListener('click', function(e) {
+    const row = e.target.closest('tr');
+    if (!row || row.parentNode.tagName === 'THEAD') return;
+
+    tbody.querySelectorAll('tr.selected').forEach(r => r.classList.remove('selected'));
+    row.classList.add('selected');
+
+    selectedRequestId = row.getAttribute('data-id');
+    assignBtn.disabled = false;
+    assignBtn.textContent = `Assign Contractor (ID: ${selectedRequestId})`;
+  });
+
+  assignBtn.addEventListener('click', async function() {
+    if (!this.disabled && selectedRequestId) {
+      try {
+        const response = await fetch(`/api/EditTickets/${selectedRequestId}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ state: 'assigned' }),
+        });
+
+        if (!response.ok) {
+          const payload = await response.json();
+          throw new Error(payload.error || 'Failed to assign contractor');
+        }
+
+        await fetchRequests();
+        window.location.href = `Assign Contractor.html?requestId=${selectedRequestId}`;
+      } catch (error) {
+        console.error(error);
+        alert('Could not assign contractor. Check console for details.');
+      }
+    } else {
+      alert('Please select a request first.');
+    }
+  });
+
   document.addEventListener('DOMContentLoaded', () => {
-    const currentFile = window.location.pathname.split('/').pop() || 'Services Requests.html';
+    const currentFile = window.location.pathname.split('/').pop() || 'Service_Requests.html';
     document.querySelectorAll('.sidebar li').forEach(li => {
       const page = li.getAttribute('data-page');
-      if (page === currentFile) {
+      if (page === currentFile || page.endsWith(currentFile)) {
         li.classList.add('active');
       } else {
         li.classList.remove('active');
       }
     });
-  });
 
-  const table = document.getElementById('requestsTable');
-  const assignBtn = document.getElementById('assignBtn');
-  let selectedRequestId = null;
-
-  table.addEventListener('click', function(e) {
-    if (e.target.tagName === 'BUTTON' && e.target.classList.contains('btn-view')) {
-      return;
-    }
-
-    let row = e.target.closest('tr');
-    if (!row || row.parentNode.tagName === 'THEAD') return;
-
-    document.querySelectorAll('#requestsTable tr.selected').forEach(r => r.classList.remove('selected'));
-
-    row.classList.add('selected');
-    selectedRequestId = row.getAttribute('data-id');
-
-    assignBtn.disabled = false;
-    assignBtn.textContent = `Assign Contractor (ID: ${selectedRequestId})`;
-  });
-
-  assignBtn.addEventListener('click', function() {
-    if (!this.disabled && selectedRequestId) {
-      window.location.href = `Assign Contractor.html?requestId=${selectedRequestId}`;
-    } else {
-      alert("Please select a request first.");
-    }
+    fetchRequests();
   });
 </script>
 

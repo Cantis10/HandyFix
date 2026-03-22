@@ -225,63 +225,21 @@
   <div class="stats">
     <div class="stat-card">
       <h3>Total Requests</h3>
-      <div class="value">45</div>
-    </div>
-    <div class="stat-card">
-      <h3>Pending</h3>
-      <div class="value">10</div>
+      <div class="value" id="totalRequests">...</div>
     </div>
     <div class="stat-card">
       <h3>Assigned</h3>
-      <div class="value">20</div>
+      <div class="value" id="assignedRequests">...</div>
     </div>
     <div class="stat-card">
       <h3>Completed</h3>
-      <div class="value">15</div>
+      <div class="value" id="completedRequests">...</div>
     </div>
   </div>
 
   <h2>Recent Requests</h2>
-  <div class="table-wrapper">
-    <table>
-      <thead>
-        <tr>
-          <th>Request ID</th>
-          <th>Customer</th>
-          <th>Service</th>
-          <th>Location</th>
-          <th>Status</th>
-          <th>Action</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr>
-          <td>1023</td>
-          <td>Juan Dela Cruz</td>
-          <td>Plumbing</td>
-          <td>QC</td>
-          <td>Pending</td>
-          <td>
-            <a href="Service Requests.html">
-            <button class="btn-view">View</button>
-            </a>
-          </td>
-        </tr>
-        <tr>
-          <td>1024</td>
-          <td>Ana Santos</td>
-          <td>Electrical</td>
-          <td>QC</td>
-          <td>Assigned</td>
-          <td>
-            <a href="Service Requests.html">
-              <button class="btn-view">View</button>
-            </a>
-          </td>
-        </tr>
-  
-      </tbody>
-    </table>
+  <div class="table-wrapper" id="requestsTableWrapper">
+    
   </div>
 </main>
 
@@ -309,8 +267,77 @@
         li.classList.remove('active');
       }
     });
-  });
+    
+    data = fetchRequestsCount();
+    data.then(tickets => {
+      console.log(tickets);
+      document.getElementById('totalRequests').textContent = tickets.total;
+      document.getElementById('assignedRequests').textContent = tickets.totalAssigned;
+      document.getElementById('completedRequests').textContent = tickets.totalClosed;
+    });
 
+    ticketData = fetchRequests();
+    ticketData.then(tickets => {
+      console.log(tickets);
+      // Render table from JSON
+      renderTable(tickets);
+    });
+  });
+  
+  async function fetchRequestsCount() {
+    try {
+      //RETURNS INT
+      const response = await fetch('/api/CountTickets');
+      if (!response.ok) throw new Error('Failed to load requests');
+      const tickets = await response.json();
+      return tickets;
+    } catch (error) {
+      console.error(error);
+    }
+    return 0;
+  }
+
+  async function fetchRequests() {
+    try {
+      const response = await fetch('/api/AllTickets');
+      if (!response.ok) throw new Error('Failed to load requests');
+      const tickets = await response.json();
+      return tickets;
+    } catch (error) {
+      console.error(error);
+    }
+    return [];
+  }
+
+  function renderTable(tickets) {
+    const tableWrapper = document.getElementById('requestsTableWrapper');
+    const table = document.createElement('table');
+    const thead = document.createElement('thead');
+    const tbody = document.createElement('tbody');
+
+    table.appendChild(thead);
+    table.appendChild(tbody);
+    tableWrapper.appendChild(table);
+
+    const headers = ['Request ID', 'Customer', 'Service', 'Sub Service', 'Location', 'Status'];
+    const ths = headers.map(header => `<th>${header}</th>`).join(''); 
+    thead.innerHTML = `<tr>${ths}</tr>`;
+
+    tickets.forEach(ticket => {
+      const row = document.createElement('tr');
+      row.innerHTML = `
+        <td>${ticket.id}</td>
+        <td>${ticket.user_id || 'Unknown'}</td>
+        <td>${ticket.type || ''}</td>
+        <td>${ticket.sub_type || ''}</td>
+        <td>${ticket.order_date || ''}</td>
+        <td>${ticket.state || 'pending'}</td>
+      `;
+      tbody.appendChild(row);
+    });
+
+    
+  }
 </script>
 
 </body>
