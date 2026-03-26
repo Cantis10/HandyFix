@@ -7,7 +7,7 @@ app.get('/', (req, res) => {
 });
 
 app.get('/calendar', (req, res) => {
-  res.sendFile(path.join(__dirname, '../../frontend/contractor/contractor_endar.html'));
+  res.sendFile(path.join(__dirname, '../../frontend/contractor/contractor_calendar.html'));
 });
 
 app.get('/bookings', (req, res) => {
