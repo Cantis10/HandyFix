@@ -7,18 +7,32 @@ app.get('/', (req, res) => {
 });
 
 app.get('/booking', (req, res) => {
-  res.sendFile(path.join(__dirname, '../../frontend/user/booking.html'))
+  res.sendFile(path.join(__dirname, '../../frontend/user/bookings.html'))
 });
 
-app.get('/repairs/:data', (req, res) => {
-  res.sendFile(path.join(__dirname, '../../frontend/user/repairList.html'))
+app.get('/messages', (req, res) => {
+  res.sendFile(path.join(__dirname, '../../frontend/user/messages.html'))
 });
 
-app.get('/repairs/:data/:subdata', (req, res) => {
-  res.sendFile(path.join(__dirname, '../../frontend/user/repairSelection.html'))
+app.get('/profile', (req, res) => {
+  res.sendFile(path.join(__dirname, '../../frontend/user/profile.html'))
 });
 
-app.get('/initiateRepair/:data/:subdata', (req, res) => {
+app.get('/settings', (req, res) => {
+  res.sendFile(path.join(__dirname, '../../frontend/user/settings.html'))
+});
+
+app.get('/support', (req, res) => {
+  res.sendFile(path.join(__dirname, '../../frontend/user/support.html'))
+});
+
+
+
+app.get('/repairs', (req, res) => {
+  res.sendFile(path.join(__dirname, `../../frontend/user/${req.query.repair}.html`))
+});
+
+app.get('/initiateRepair', (req, res) => {
   res.sendFile(path.join(__dirname, '../../frontend/user/initiateRepair.html'))
 });
 
