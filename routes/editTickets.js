@@ -1,7 +1,11 @@
 const express = require("express");
 const app = express.Router();
 const db = require("./database");
+const cookieParser = require("cookie-parser");
+const jwt = require("jsonwebtoken");
 
+
+app.use(cookieParser());
 /**
 CREATE TABLE tickets (
 id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -20,6 +24,42 @@ app.get("/AllTickets", async (req, res) => {
   try {
     const result = await db.execute("SELECT * FROM tickets");
 
+    res.json(result.rows);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Server error" });
+  }
+});
+
+app.get("/fetchUserTickets", async (req, res) => {
+  try {
+    const decoded = jwt.decode(req.cookies.auth);
+    const email = decoded.email;
+
+    console.log("Fetching tickets for email:", email);
+
+    const result = await db.execute(`
+ 
+SELECT
+    t.*,
+    u.email AS requester_email,
+    c.first_name,
+    c.last_name,
+    a.reservation AS date,
+    t.state AS state,
+    f.icon,
+    GROUP_CONCAT(f.id) AS fix_ids
+FROM tickets t
+INNER JOIN users u ON t.user_id = u.id
+LEFT JOIN assignments a ON t.id = a.ticket_id
+LEFT JOIN users c ON a.contractor_id = c.id
+LEFT JOIN fixes f ON f.service = t.type
+WHERE u.email = ?
+GROUP BY t.id;
+       `, [
+      email,
+    ]);
+    console.log("Fetched tickets:", result.rows);
     res.json(result.rows);
   } catch (err) {
     console.error(err);

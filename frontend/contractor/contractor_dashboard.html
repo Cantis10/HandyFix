@@ -41,27 +41,6 @@
     .activity-meta  { font-size: 11px; color: var(--text-muted); margin-top: 2px; }
     .activity-time  { font-size: 10.5px; color: var(--text-dim); white-space: nowrap; }
 
-    .service-row {
-      display: flex; align-items: center; gap: 12px;
-      padding: 10px 0; border-bottom: 1px solid var(--border);
-    }
-    .service-row:last-child { border-bottom: none; }
-    .service-rank {
-      width: 22px; height: 22px; border-radius: 6px;
-      background: var(--gold-dim); display: flex; align-items: center;
-      justify-content: center; font-size: 11px; font-weight: 700;
-      color: var(--gold); flex-shrink: 0;
-    }
-    .service-bar-bg {
-      flex: 1; height: 5px; background: var(--surface-3); border-radius: 99px; overflow: hidden;
-    }
-    .service-bar-fill {
-      height: 100%; border-radius: 99px;
-      background: linear-gradient(90deg, var(--gold), var(--maroon));
-      transition: width 1.2s cubic-bezier(0.4,0,0.2,1);
-    }
-    .service-pct { font-size: 11px; color: var(--text-muted); min-width: 30px; text-align: right; }
-
     .upcoming-item {
       display: flex; align-items: center; gap: 12px;
       padding: 10px 12px; border-radius: 10px;
@@ -210,13 +189,6 @@
           <div class="stat-bg-icon">❌</div>
         </div>
         <div class="stat-card">
-          <div class="stat-icon">💰</div>
-          <div class="stat-value" id="statEarnings">₱62K</div>
-          <div class="stat-label">Total Earnings</div>
-          <div class="stat-meta stat-up">▲ ₱8,400 this month</div>
-          <div class="stat-bg-icon">💰</div>
-        </div>
-        <div class="stat-card">
           <div class="stat-icon">⭐</div>
           <div class="stat-value" id="statRating">4.8</div>
           <div class="stat-label">Avg. Rating</div>
@@ -225,18 +197,8 @@
         </div>
       </div>
 
-      <!-- ROW 2: Chart + Upcoming -->
-      <div class="grid-2 mb-6">
-        <!-- Monthly Bookings Chart -->
-        <div class="card">
-          <div class="card-header">
-            <div class="card-title"><span class="card-title-icon">📊</span> Monthly Bookings</div>
-            <span class="badge badge-gold">2026</span>
-          </div>
-          <div class="chart-bar-wrap" id="bookingsChart"></div>
-          <div class="chart-labels" id="chartLabels"></div>
-        </div>
-
+      <!-- ROW 2: Upcoming -->
+      <div class="mb-6">
         <!-- Upcoming Bookings -->
         <div class="card">
           <div class="card-header">
@@ -247,16 +209,8 @@
         </div>
       </div>
 
-      <!-- ROW 3: Top Services + Activity -->
-      <div class="grid-2">
-        <!-- Top Services -->
-        <div class="card">
-          <div class="card-header">
-            <div class="card-title"><span class="card-title-icon">🏆</span> Top Services</div>
-          </div>
-          <div id="topServicesList"></div>
-        </div>
-
+      <!-- ROW 3: Activity -->
+      <div>
         <!-- Recent Activity -->
         <div class="card">
           <div class="card-header">
@@ -287,36 +241,10 @@
 <script>
 /* ── Dashboard Page Script ── */
 document.addEventListener('DOMContentLoaded', () => {
-  renderChart();
   renderUpcoming();
-  renderTopServices();
   renderActivity();
   animateCounters();
 });
-
-/* Chart */
-function renderChart() {
-  const data   = [5, 8, 6, 11, 9, 14, 10, 13, 12, 16, 11, 9];
-  const labels = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
-  const max    = Math.max(...data);
-  const wrap   = document.getElementById('bookingsChart');
-  const lWrap  = document.getElementById('chartLabels');
-  if (!wrap) return;
-  data.forEach((v, i) => {
-    const pct  = Math.round((v / max) * 100);
-    const bar  = document.createElement('div');
-    bar.className = 'chart-bar';
-    bar.style.height = '0%';
-    bar.innerHTML = `<div class="bar-tip">${v} bookings</div>`;
-    wrap.appendChild(bar);
-    setTimeout(() => { bar.style.height = pct + '%'; }, 200 + i * 60);
-  });
-  labels.forEach(l => {
-    const s = document.createElement('span');
-    s.textContent = l;
-    lWrap.appendChild(s);
-  });
-}
 
 /* Upcoming */
 function renderUpcoming() {
@@ -344,36 +272,6 @@ function renderUpcoming() {
         </div>
       </div>`;
   });
-}
-
-/* Top Services */
-function renderTopServices() {
-  const services = [
-    { name:'Electrical Work', pct: 78 },
-    { name:'Plumbing',        pct: 62 },
-    { name:'Painting',        pct: 45 },
-    { name:'Carpentry',       pct: 30 },
-    { name:'Tiling',          pct: 18 },
-  ];
-  const wrap = document.getElementById('topServicesList');
-  if (!wrap) return;
-  services.forEach((s, i) => {
-    wrap.innerHTML += `
-      <div class="service-row">
-        <div class="service-rank">${i + 1}</div>
-        <span style="font-size:12.5px;flex:0 0 130px;color:var(--text-primary)">${s.name}</span>
-        <div class="service-bar-bg">
-          <div class="service-bar-fill" id="sbar${i}" style="width:0%"></div>
-        </div>
-        <span class="service-pct">${s.pct}%</span>
-      </div>`;
-  });
-  setTimeout(() => {
-    services.forEach((s, i) => {
-      const el = document.getElementById('sbar' + i);
-      if (el) el.style.width = s.pct + '%';
-    });
-  }, 400);
 }
 
 /* Activity */

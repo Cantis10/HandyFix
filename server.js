@@ -38,9 +38,11 @@ app.use("/api/", fetchUsersRouter);
 const fetchTicketsRouter = require("./routes/editTickets");
 app.use("/api/", fetchTicketsRouter);
 
-
 const fetchRepairsRouter = require("./routes/repairs");
 app.use("/api/", fetchRepairsRouter);
+
+const fetchMessagesRouter = require("./routes/editMessages");
+app.use("/api/", fetchMessagesRouter);
 
 app.listen(PORT, () => {
   console.log(`Server running at http://localhost:${PORT}`);

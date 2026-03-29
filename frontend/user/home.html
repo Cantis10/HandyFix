@@ -16,6 +16,7 @@
         <div class="row">
             <nav class="col-md-2 p-0 text-white min-vh-100 shadow d-flex flex-column justify-content-between"
                 style="background-color: #4A0E0E; position: fixed;">
+                <!-- NAV REMAINS UNCHANGED -->
                 <div>
                     <div class="p-4 text-center">
                         <h4 class="fw-bold m-0">LOGO</h4>
@@ -93,127 +94,135 @@
             </nav>
 
             <main class="col-md-10 offset-md-2 bg-light p-5 min-vh-100">
-                <h2 class="fw-bold mb-4" style="color: #4A0E0E;">Welcome Back, Maria!</h2>
+                <h2 class="fw-bold mb-4" id="welcomeMessage" style="color: #4A0E0E;">Welcome Back!</h2>
 
-                <a name="plumbing" onclick="repairNav(this)" class="text-decoration-none flex-fill d-flex">
-                    <div class="d-flex justify-content-between gap-3 mb-5">
-                        <div class="card border-0 shadow-sm service-card p-3 text-center flex-fill">
-                            <i class="bi bi-droplet-fill fs-2 mb-2 text-primary"></i>
-                            <h6 class="fw-bold m-0 small">Plumbing</h6>
-                        </div>
-                </a>
+                <!-- Services Grid -->
+                <div id="servicesContainer" class="d-flex justify-content-between gap-3 mb-5"></div>
 
-                <a name="maintenance" onclick="repairNav(this)" class="text-decoration-none flex-fill d-flex">
-                    <div class="card border-0 shadow-sm service-card p-3 text-center flex-fill">
-                        <i class="bi bi-house-check-fill fs-2 mb-2 text-success"></i>
-                        <h6 class="fw-bold m-0 small">Home Maintenance</h6>
+                <!-- Recent Bookings -->
+                <div class="card border-0 shadow-sm p-4 mb-5">
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <h5 class="fw-bold m-0" style="color: #4A0E0E;">Recent Bookings</h5>
+                        <a href="bookings.html" class="btn btn-sm text-white px-3" style="background-color: #a23a3a;">View
+                            All</a>
                     </div>
-                </a>
-
-                <a name="electrical" onclick="repairNav(this)" class="text-decoration-none flex-fill d-flex">
-                    <div class="card border-0 shadow-sm service-card p-3 text-center flex-fill">
-                        <i class="bi bi-lightning-charge-fill fs-2 mb-2 text-warning"></i>
-                        <h6 class="fw-bold m-0 small">Electrical</h6>
-                    </div>
-                </a>
-
-                <a name="carpentry" onclick="repairNav(this)" class="text-decoration-none flex-fill d-flex">
-                    <div class="card border-0 shadow-sm service-card p-3 text-center flex-fill">
-                        <i class="bi bi-tools fs-2 mb-2" style="color: #A63114;"></i>
-                        <h6 class="fw-bold m-0 small">Carpentry</h6>
-                    </div>
-                </a>
-
-                <a name="tool" onclick="repairNav(this)" class="text-decoration-none flex-fill d-flex">
-                    <div class="card border-0 shadow-sm service-card p-3 text-center flex-fill">
-                        <i class="bi bi-briefcase-fill fs-2 mb-2" style="color: #5D2E17;"></i>
-                        <h6 class="fw-bold m-0 small">Tool Services</h6>
-                    </div>
-                </a>
-        </div>
-
-        <div class="card border-0 shadow-sm p-4 mb-5">
-            <div class="d-flex justify-content-between align-items-center mb-4">
-                <h5 class="fw-bold m-0" style="color: #4A0E0E;">Recent Bookings</h5>
-                <a href="bookings.html" class="btn btn-sm text-white px-3" style="background-color: #a23a3a;">View
-                    All</a>
-            </div>
-            <div class="table-responsive">
-                <table class="table table-hover align-middle">
-                    <thead class="table-light text-muted">
-                        <tr>
-                            <th>ID</th>
-                            <th>Service Type</th>
-                            <th>Technician</th>
-                            <th>Status</th>
-                            <th>Date</th>
-                        </tr>
-                    </thead>
-                    <tbody class="small">
-                        <tr>
-                            <td>#301</td>
-                            <td><i class="bi bi-droplet-fill text-primary me-2"></i> Plumbing</td>
-                            <td>Juan Dela Cruz</td>
-                            <td><span class="badge rounded-pill bg-info-subtle text-dark">Upcoming</span></td>
-                            <td>2026-03-27</td>
-                        </tr>
-                        <tr>
-                            <td>#302</td>
-                            <td><i class="bi bi-lightning-charge-fill text-warning me-2"></i> Electrical</td>
-                            <td>Alden Ash</td>
-                            <td><span class="badge rounded-pill bg-success text-white">Completed</span></td>
-                            <td>2026-03-19</td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
-        </div>
-
-        <h5 class="fw-bold mb-3" style="color: #4A0E0E;">Top Rated Technicians</h5>
-        <div class="row g-3">
-            <div class="col-md-4">
-                <div class="card border-0 shadow-sm p-3 rounded-4 h-100">
-                    <div class="d-flex align-items-center gap-3">
-                        <i class="bi bi-person-circle fs-1 text-secondary"></i>
-                        <div>
-                            <h6 class="fw-bold m-0" style="color: #4A0E0E;">Alden Ash</h6>
-                            <p class="text-muted m-0" style="font-size: 0.75rem; font-weight: 600;">Electrical</p>
-                            <small class="text-warning"><i class="bi bi-star-fill"></i> 4.9 <span
-                                    class="text-muted">(120 reviews)</span></small>
-                        </div>
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle">
+                            <thead class="table-light text-muted">
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Service Type</th>
+                                    <th>Technician</th>
+                                    <th>Status</th>
+                                    <th>Date</th>
+                                </tr>
+                            </thead>
+                            <tbody class="small" id="bookingsTableBody"></tbody>
+                        </table>
                     </div>
                 </div>
-            </div>
 
-            <div class="col-md-4">
-                <div class="card border-0 shadow-sm p-3 rounded-4 h-100">
-                    <div class="d-flex align-items-center gap-3">
-                        <i class="bi bi-person-circle fs-1 text-secondary"></i>
-                        <div>
-                            <h6 class="fw-bold m-0" style="color: #4A0E0E;">Juan Dela Cruz</h6>
-                            <p class="text-muted m-0" style="font-size: 0.75rem; font-weight: 600;">Plumbing</p>
-                            <small class="text-warning"><i class="bi bi-star-fill"></i> 4.8 <span class="text-muted">(85
-                                    reviews)</span></small>
-                        </div>
-                    </div>
-                </div>
-            </div>
+                <!-- Top Rated Technicians -->
+                <h5 class="fw-bold mb-3" style="color: #4A0E0E;">Top Rated Technicians</h5>
+                <div class="row g-3" id="techniciansContainer"></div>
+            </main>
         </div>
-        </main>
     </div>
-    </div>
-
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 
     <script>
+        // Data Arrays
+        const services = [
+            { name: 'plumbing', label: 'Plumbing', icon: 'bi-droplet-fill', color: 'text-primary' },
+            { name: 'maintenance', label: 'Home Maintenance', icon: 'bi-house-check-fill', color: 'text-success' },
+            { name: 'electrical', label: 'Electrical', icon: 'bi-lightning-charge-fill', color: 'text-warning' },
+            { name: 'carpentry', label: 'Carpentry', icon: 'bi-tools', color: '', style: 'color: #A63114;' },
+            { name: 'tool', label: 'Tool Services', icon: 'bi-briefcase-fill', color: '', style: 'color: #5D2E17;' }
+        ];
+
+        let bookings = [];
+
+        async function fetchBookings() {
+            try {
+                const response = await fetch('/api/fetchUserTickets');
+                if (!response.ok) throw new Error('Failed to fetch bookings');
+                return await response.json();
+            } catch (error) {
+                console.error(error);
+                return [];
+            }
+        }
+
+        const technicians = [
+            { name: 'Alden Ash', specialty: 'Electrical', rating: 4.9, reviews: 120 },
+            { name: 'Juan Dela Cruz', specialty: 'Plumbing', rating: 4.8, reviews: 85 }
+        ];
+
+        // Load Services
+        function loadServices() {
+            const container = document.getElementById('servicesContainer');
+            container.innerHTML = services.map(service => `
+                <a name="${service.name}" onclick="repairNav(this)" class="text-decoration-none flex-fill d-flex">
+                    <div class="card border-0 shadow-sm service-card p-3 text-center flex-fill">
+                        <i class="bi ${service.icon} fs-2 mb-2 ${service.color}" ${service.style ? `style="${service.style}"` : ''}></i>
+                        <h6 class="fw-bold m-0 small">${service.label}</h6>
+                    </div>
+                </a>
+            `).join('');
+        }
+
+        // Load Bookings
+        function loadBookings() {
+            const tbody = document.getElementById('bookingsTableBody');
+            tbody.innerHTML = bookings.map(booking => `
+                <tr>
+                    <td>${booking.id}</td>
+                    <td><i class="bi ${booking.icon} me-2"></i> ${booking.type} </td>
+                    <td>${booking.first_name} ${booking.last_name}</td>
+                    <td>${booking.state}</td>
+                    <td>${booking.date}</td>
+                </tr>
+            `).join('');
+        }
+
+        // Load Technicians
+        function loadTechnicians() {
+            const container = document.getElementById('techniciansContainer');
+            container.innerHTML = technicians.map(tech => `
+                <div class="col-md-4">
+                    <div class="card border-0 shadow-sm p-3 rounded-4 h-100">
+                        <div class="d-flex align-items-center gap-3">
+                            <i class="bi bi-person-circle fs-1 text-secondary"></i>
+                            <div>
+                                <h6 class="fw-bold m-0" style="color: #4A0E0E;">${tech.name}</h6>
+                                <p class="text-muted m-0" style="font-size: 0.75rem; font-weight: 600;">${tech.specialty}</p>
+                                <small class="text-warning"><i class="bi bi-star-fill"></i> ${tech.rating} <span class="text-muted">(${tech.reviews} reviews)</span></small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // Initialize on page load
+        async function init() {
+            bookings = await fetchBookings();
+            console.log("Fetched bookings:", bookings);
+            loadServices();
+            loadBookings();
+            loadTechnicians();
+        }
+
+        document.addEventListener('DOMContentLoaded', init);
+
+        // Existing functions
         const servicesToggle = document.getElementById('servicesToggle');
         const dashboardLink = document.getElementById('dashboardLink');
 
         servicesToggle.addEventListener('click', function () {
             dashboardLink.classList.remove('active-link');
             dashboardLink.classList.add('opacity-75');
-
             this.classList.add('clicked-service');
             this.classList.remove('opacity-75');
         });

@@ -128,9 +128,7 @@
 
             
 
-            <div class="flex-grow-1 p-4 overflow-auto d-flex flex-column" id="chat-messages">
-                <div class="message-bubble received">Hi! I have a problem with my sink.</div>
-                <div class="message-bubble sent">Hello! John Doe here. I can visit at 2 PM.</div>
+            <div class="flex-grow-1 p4 overflow-auto d-flex flex-column" id="chat-messages">
             </div>
 
             <div class="p-3 bg-transparent border-top">
@@ -161,187 +159,249 @@
 
 <script>
 
-const technicians = [
-    { name: 'John Doe', status: 'Active Now', initials: 'JD', preview: "That's a clogged..." },
-    { name: 'Alden Ash', status: 'Active Now', initials: 'AA', preview: "Noted. I'll ensure...", bgColor: '#2c3e50' },
-    { name: 'Juan Dela Cruz', status: 'Active 5m ago', initials: 'JC', preview: "I need to check the...", bgColor: '#16a085' },
-    { name: 'Ana Santos', status: 'Active Now', initials: 'AS', preview: "Good thing you no...", bgColor: '#8e44ad' }
-];
+// ─── State ────────────────────────────────────────────────────────────────────
 
-const conversations = {
-    'John Doe': [
-        { type: 'sent', text: 'Hey John, my aircon isn\'t cooling properly anymore.'},
-        { type: 'received', text: 'It might need a deep cleaning or a freon recharge.' },
-        { type: 'sent', text: 'It\'s also leaking water inside the room.' },
-        { type: 'received', text: 'That\'s a clogged drainage. I\'ll be there by 4 PM to fix it.' }
-    ],
-    'Alden Ash': [
-        { type: 'sent', text: 'Hi Alden, I noticed some flickering lights in the kitchen. Can you check it?'},
-        { type: 'received', text: 'Good morning! Yes, that sounds like a loose connection. I can check it later.' },
-        { type: 'sent', text: 'Great. Please check the outlets as well just to be safe.' },
-        { type: 'received', text: 'Noted. I\'ll ensure all the wiring is now okay before I leave.' }
-    ],
-    'Juan Dela Cruz': [
-        { type: 'sent', text: 'Hi, I have a problem with my sink.'},
-        { type: 'received', text: 'Hello! John Doe here. I can visit at 2 PM to fix your sink.' },
-        { type: 'sent', text: 'Hi John, that would be great. How much is the estimate?' },
-        { type: 'received', text: 'I need to check the pipes first, but standard labor is around 500 pesos.' }
-    ],
-    'Ana Santos': [
-        { type: 'sent', text: 'Hi Ana, are you available to check some grounded outlets in my room?'},
-        { type: 'received', text: 'Hello! Yes, I can drop by. Is the circuit breaker tripping when you use them?' },
-        { type: 'sent', text: 'Yes, it happened twice this morning. I\'m worried it might cause a short circuit.' },
-        { type: 'received', text: 'Good thing you noticed. Please avoid using those outlets for now. I\'ll be there in an hour.' }
-    ],
-};
+/**
+ * Holds all fetched messages keyed by ticket_id.
+ * conversations[ticketId] = [ { type: 'sent'|'received', text: '...' }, ... ]
+ */
+let conversations = {};
 
-function renderTechniciansList() {
-    const technicianList = document.getElementById('technicianList');
-    technicianList.innerHTML = '';
+/**
+ * Holds technician metadata keyed by ticket_id.
+ * ticketMeta[ticketId] = { name, initials, bgColor, status, preview }
+ * 
+ * NOTE: The API currently doesn't return technician names/avatars, so we fall
+ * back to placeholder values. Replace the `resolveTechMeta` function below
+ * when your API exposes that data.
+ */
+let ticketMeta = {};
 
-    technicians.forEach((tech, index) => {
+/** The ticket_id of the currently open chat. */
+let activeTicketId = null;
+
+
+// ─── API ──────────────────────────────────────────────────────────────────────
+
+async function fetchMessages() {
+    try {
+        const response = await fetch('/api/fetchMessages');
+        if (!response.ok) throw new Error('Network response was not ok');
+        return await response.json();
+    } catch (error) {
+        console.error('Error fetching messages:', error);
+        return [];
+    }
+}
+
+
+// ─── Data helpers ─────────────────────────────────────────────────────────────
+
+/**
+ * Returns display metadata for a ticket.
+ * Extend this when your API returns contractor names/avatars per ticket.
+ */
+function resolveTechMeta(ticketId, index) {
+    // Palette for avatar backgrounds when no colour is specified
+    const palette = ['#2c3e50', '#16a085', '#8e44ad', '#c0392b', '#d35400'];
+
+    return ticketMeta[ticketId] || {
+        name: `Ticket #${ticketId}`,
+        initials: `T${ticketId}`,
+        bgColor: palette[index % palette.length],
+        status: 'Active Now',
+        preview: ''
+    };
+}
+
+/**
+ * Builds `conversations` and `ticketMeta` from the raw API array.
+ * A message is "sent" (by the logged-in customer) when user_id is not null;
+ * "received" when contractor_id is not null.
+ */
+function processMessages(messages) {
+    conversations = {};
+    // Track insertion order of ticket IDs
+    const ticketOrder = [];
+
+    messages.forEach(msg => {
+        const tid = msg.ticket_id;
+
+        if (!conversations[tid]) {
+            conversations[tid] = [];
+            ticketOrder.push(tid);
+        }
+
+        const type = msg.user_id !== null ? 'sent' : 'received';
+        conversations[tid].push({ type, text: msg.message });
+    });
+
+    // Build ticketMeta with a preview (last message in the ticket)
+    ticketOrder.forEach((tid, index) => {
+        const msgs = conversations[tid];
+        const lastMsg = msgs[msgs.length - 1];
+        const existing = ticketMeta[tid] || {};
+
+        ticketMeta[tid] = {
+            ...resolveTechMeta(tid, index),
+            ...existing,
+            preview: lastMsg ? lastMsg.text.substring(0, 40) + (lastMsg.text.length > 40 ? '…' : '') : ''
+        };
+    });
+
+    return ticketOrder;
+}
+
+
+// ─── Rendering ────────────────────────────────────────────────────────────────
+
+function renderTechniciansList(ticketOrder) {
+    const list = document.getElementById('technicianList');
+    list.innerHTML = '';
+
+    ticketOrder.forEach((tid, index) => {
+        const meta = ticketMeta[tid];
+
         const card = document.createElement('div');
         card.className = `tech-card d-flex align-items-center p-3 mb-2 ${index === 0 ? 'active-chat' : ''}`;
-        card.setAttribute('data-name', tech.name);
-        card.onclick = () => openChat(tech.name, tech.status, tech.initials);
+        card.setAttribute('data-ticket', tid);
+        card.onclick = () => openChat(tid);
 
         const avatar = document.createElement('div');
         avatar.className = 'avatar-circle';
-        if (tech.bgColor) avatar.style.backgroundColor = tech.bgColor;
-        avatar.innerText = tech.initials;
+        avatar.style.height = '25px';
+        avatar.style.width = '25px';    
+        if (meta.bgColor) avatar.style.backgroundColor = meta.bgColor;
+        avatar.innerText = meta.initials;
 
         const content = document.createElement('div');
-        content.className = 'ms-3 flex-grow-1';
+        content.className = 'ms-1 flex-grow-1 overflow-hidden';
 
         const name = document.createElement('h6');
         name.className = 'mb-0 fw-bold';
-        name.innerText = tech.name;
+        name.innerText = meta.name;
 
         const preview = document.createElement('small');
         preview.className = 'text-muted text-truncate d-block';
-        preview.id = `preview-${tech.name.replace(/\s+/g, '-')}`;
-        preview.innerText = tech.preview;
+        preview.id = `preview-${tid}`;
+        preview.innerText = meta.preview;
 
         content.appendChild(name);
         content.appendChild(preview);
-
         card.appendChild(avatar);
         card.appendChild(content);
-        technicianList.appendChild(card);
+        list.appendChild(card);
     });
 }
 
-function getActiveTechName() {
-    const activeCard = document.querySelector('.tech-card.active-chat');
-    if (activeCard) {
-        return activeCard.querySelector('h6').innerText.trim();
-    }
-    return "John Doe"; 
-}
+function openChat(ticketId) {
+    activeTicketId = ticketId;
+    const meta = ticketMeta[ticketId];
 
-function openChat(name, status, initials) {
-    document.getElementById('chat-name').innerText = name;
-    document.getElementById('chat-avatar').innerText = initials;
+    // Update header
+    document.getElementById('chat-name').innerText = meta.name;
+    document.getElementById('chat-avatar').innerText = meta.initials;
 
-    const statusElement = document.getElementById('chat-status');
-    if (status === 'Active Now') {
-        statusElement.innerHTML = `<span class="status-dot"></span>Active Now`;
+    const statusEl = document.getElementById('chat-status');
+    if (meta.status === 'Active Now') {
+        statusEl.innerHTML = `<span class="status-dot"></span>Active Now`;
     } else {
-        statusElement.innerText = status;
+        statusEl.innerText = meta.status;
     }
 
+    // Render messages
     const chatWindow = document.getElementById('chat-messages');
-    chatWindow.innerHTML = ''; 
+    chatWindow.innerHTML = '';
 
-    if (conversations[name]) {
-        conversations[name].forEach(msg => {
-            const wrapper = document.createElement('div');
-            wrapper.className = `message-wrapper ${msg.type}`;
+    (conversations[ticketId] || []).forEach(msg => {
+        const wrapper = document.createElement('div');
+        wrapper.className = `message-wrapper ${msg.type}`;
 
-            const label = document.createElement('div');
-            label.className = 'chat-label';
-            label.innerText = (msg.type === 'sent') ? 'Customer' : 'Technician';
+        const label = document.createElement('div');
+        label.className = 'chat-label';
+        label.innerText = msg.type === 'sent' ? 'Customer' : 'Technician';
 
-            const bubble = document.createElement('div');
-            bubble.className = `chat-bubble-box ${msg.type}`;
-            bubble.innerText = msg.text;
+        const bubble = document.createElement('div');
+        bubble.className = `chat-bubble-box ${msg.type}`;
+        bubble.innerText = msg.text;
 
-            wrapper.appendChild(label);
-            wrapper.appendChild(bubble);
-            chatWindow.appendChild(wrapper);
-        });
-    }
+        wrapper.appendChild(label);
+        wrapper.appendChild(bubble);
+        chatWindow.appendChild(wrapper);
+    });
 
-    const cards = document.getElementsByClassName('tech-card');
-    for (let card of cards) {
-        card.classList.remove('active-chat');
-        if (card.getAttribute('data-name') === name) {
-            card.classList.add('active-chat');
-        }
-    }
+    // Highlight active card
+    document.querySelectorAll('.tech-card').forEach(card => {
+        card.classList.toggle('active-chat', card.getAttribute('data-ticket') == ticketId);
+    });
 
     chatWindow.scrollTop = chatWindow.scrollHeight;
 }
 
-function updatePreview(val) {
-    const currentName = getActiveTechName();
-    let targetID = "preview-" + currentName.replace(/\s+/g, '-');
-    let previewElement = document.getElementById(targetID);
 
-    if (previewElement) {
-        if (val.trim() === "") {
-            previewElement.style.fontStyle = "normal";
-            previewElement.style.color = "#6c757d";
-        } else {
-            previewElement.innerText = val;
-            previewElement.style.color = "#800000"; 
-        }
-    }
-}
+// ─── Send message ─────────────────────────────────────────────────────────────
 
 function sendMessage() {
     const input = document.getElementById('messageInput');
-    const messageText = input.value.trim();
-    const currentName = document.getElementById('chat-name').innerText; 
+    const text = input.value.trim();
+    if (!text || activeTicketId === null) return;
 
-    if (messageText !== "") {
-        if (!conversations[currentName]) {
-            conversations[currentName] = [];
-        }
-        conversations[currentName].push({ type: 'sent', text: messageText });
+    // Optimistically add to local state
+    if (!conversations[activeTicketId]) conversations[activeTicketId] = [];
+    conversations[activeTicketId].push({ type: 'sent', text });
 
-        const currentInitials = document.getElementById('chat-avatar').innerText;
-        const currentStatus = document.getElementById('chat-status').innerText;
-        
-        openChat(currentName, currentStatus, currentInitials);
+    // Update preview in sidebar
+    const previewEl = document.getElementById(`preview-${activeTicketId}`);
+    if (previewEl) {
+        previewEl.innerText = text.substring(0, 40) + (text.length > 40 ? '…' : '');
+        previewEl.style.color = '#800000';
+    }
 
-        input.value = "";
+    openChat(activeTicketId);
+    input.value = '';
+
+    // TODO: POST the new message to your API
+    // fetch('/api/sendMessage', { method: 'POST', body: JSON.stringify({ ticket_id: activeTicketId, message: text }) });
+}
+
+
+// ─── Search / filter ──────────────────────────────────────────────────────────
+
+function updatePreview(val) {
+    if (activeTicketId === null) return;
+    const previewEl = document.getElementById(`preview-${activeTicketId}`);
+    if (!previewEl) return;
+
+    if (val.trim() === '') {
+        const msgs = conversations[activeTicketId] || [];
+        const last = msgs[msgs.length - 1];
+        previewEl.innerText = last ? last.text.substring(0, 40) : '';
+        previewEl.style.color = '#6c757d';
+    } else {
+        previewEl.innerText = val;
+        previewEl.style.color = '#800000';
     }
 }
 
 function filterTechnicians() {
-    const input = document.getElementById('techSearch').value.toLowerCase();
-    const cards = document.getElementsByClassName('tech-card');
-
-    for (let i = 0; i < cards.length; i++) {
-        const name = cards[i].querySelector('h6').innerText.toLowerCase();
-
-        if (name.startsWith(input)) {
-            cards[i].style.setProperty('display', 'flex', 'important');
-        } else {
-            cards[i].style.setProperty('display', 'none', 'important');
-        }
-    }
+    const query = document.getElementById('techSearch').value.toLowerCase();
+    document.querySelectorAll('.tech-card').forEach(card => {
+        const name = card.querySelector('h6').innerText.toLowerCase();
+        card.style.setProperty('display', name.startsWith(query) ? 'flex' : 'none', 'important');
+    });
 }
 
-function repairNav(data) {
-    window.location.href = `/user/repairs?repair=${data.name}`;
+
+// ─── Nav helpers ──────────────────────────────────────────────────────────────
+
+function repairNav(el) {
+    window.location.href = `/user/repairs?repair=${el.name}`;
 }
 
 const servicesToggle = document.getElementById('servicesToggle');
-const dashboardLink = document.getElementById('dashboardLink');
+const dashboardLink  = document.getElementById('dashboardLink');
 
-servicesToggle.addEventListener('click', function() {
+servicesToggle.addEventListener('click', function () {
     dashboardLink.classList.remove('active-link');
     dashboardLink.classList.add('opacity-75');
     this.classList.add('clicked-service');
@@ -349,16 +409,21 @@ servicesToggle.addEventListener('click', function() {
 });
 
 document.getElementById('sendBtn').addEventListener('click', sendMessage);
-
-document.getElementById('messageInput').addEventListener('keypress', function (e) {
-    if (e.key === 'Enter') {
-        sendMessage();
-    }
+document.getElementById('messageInput').addEventListener('keypress', e => {
+    if (e.key === 'Enter') sendMessage();
 });
 
-window.onload = () => {
-    renderTechniciansList();
-    openChat('John Doe', 'Active Now', 'JD');
+
+// ─── Boot ─────────────────────────────────────────────────────────────────────
+
+window.onload = async () => {
+    const rawMessages = await fetchMessages();
+    const ticketOrder = processMessages(rawMessages);
+    renderTechniciansList(ticketOrder);
+
+    if (ticketOrder.length > 0) {
+        openChat(ticketOrder[0]);
+    }
 };
 
 </script>

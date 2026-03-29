@@ -1,28 +1,29 @@
 const express = require("express");
 const app = express.Router();
 const path = require('path');
+const { requireAuth } = require("../token"); 
 
-app.get('/', (req, res) => {
+app.get('/', requireAuth('contractor'), (req, res) => {
   res.sendFile(path.join(__dirname, '../../frontend/contractor/contractor_dashboard.html'));
 });
 
-app.get('/calendar', (req, res) => {
+app.get('/calendar', requireAuth('contractor'), (req, res) => {
   res.sendFile(path.join(__dirname, '../../frontend/contractor/contractor_calendar.html'));
 });
 
-app.get('/bookings', (req, res) => {
+app.get('/bookings', requireAuth('contractor'), (req, res) => {
   res.sendFile(path.join(__dirname, '../../frontend/contractor/contractor_bookings.html'));
 });
 
-app.get('/messages', (req, res) => {
+app.get('/messages', requireAuth('contractor'), (req, res) => {
   res.sendFile(path.join(__dirname, '../../frontend/contractor/contractor_messages.html'));
 });
 
-app.get('/profile', (req, res) => {
+app.get('/profile', requireAuth('contractor'), (req, res) => {
   res.sendFile(path.join(__dirname, '../../frontend/contractor/contractor_profile.html'));
 });
 
-app.get('/settings', (req, res) => {
+app.get('/settings', requireAuth('contractor'), (req, res) => {
   res.sendFile(path.join(__dirname, '../../frontend/contractor/contractor_settings.html'));
 });
 

@@ -31,7 +31,7 @@
             <div class="login-card">
 
                 <div class="branding">
-                    <h1 class="logo-text-maroon">TESTING TESTING</h1>
+                    <h1 class="logo-text-maroon">LOGO</h1>
                     <p class="sub-logo-text">HandyFix</p>
                 </div>
 
@@ -52,13 +52,7 @@
                         <a onclick="redirect()" class="btn btn-gold w-100 py-2 fw-bold text-decoration-none text-center">Log
                             In</a>
                     </div>
-                    <select id="rolesLogin" name="role">
-                        <option value="user">User</option>
-                        <option value="contractor">Contractor</option>
-                        <option value="admin">Admin</option>
 
-
-                    </select>
 
                     <p class="mt-4 text-muted small">
                         No account yet? <a href="/register/" class="signup-link">Register</a>
@@ -112,9 +106,7 @@
                 return;
             }
 
-            const role = document.getElementById('rolesLogin').value;
-            console.log(role);
- 
+            const role = data.user.type; 
             switch (role) {
                 case 'user': 
                 window.location.href = '/user';

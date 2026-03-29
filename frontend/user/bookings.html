@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>HandyFix | Plumbing Services</title>
+    <title>HandyFix | My Bookings</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
     <link rel="stylesheet" href="/user/style.css" />
@@ -16,7 +16,6 @@
         <div class="row">
             <nav class="col-md-2 p-0 text-white min-vh-100 shadow d-flex flex-column justify-content-between"
                 style="background-color: #4A0E0E; position: fixed;">
-                <!-- NAV CONTENT UNCHANGED -->
                 <div>
                     <div class="p-4 text-center">
                         <h4 class="fw-bold m-0">LOGO</h4>
@@ -57,13 +56,14 @@
                                         <a name="carpentry" onclick="repairNav(this)"
                                             class="nav-link text-white opacity-75 py-1 small">
                                             <i class="bi bi-tools me-2"></i>Carpentry Services</a>
+                                    </li>
                                     <li class="nav-item">
                                         <a name="tool" onclick="repairNav(this)"
                                             class="nav-link text-white opacity-75 py-1 small">
                                             <i class="bi bi-briefcase-fill me-2"></i>Tool Services</a>
                                     </li>
                                 </ul>
-                        </li>
+                            </li>
                         </li>
                         <li class="nav-item mb-2">
                             <a href="/user/booking" class="nav-link text-white opacity-75 fw-bold"><i
@@ -98,7 +98,7 @@
                     <h2 class="fw-bold" style="color: #4A0E0E;">My Bookings</h2>
                 </div>
 
-                <ul class="nav nav-pills mb-4 gap-2" id="pills-tab" role="tablet">
+                <ul class="nav nav-pills mb-4 gap-2" id="pills-tab" role="tablist">
                     <li class="nav-item" role="presentation">
                         <button class="nav-link active rounded-pill px-4 fw-bold text-secondary-emphasis"
                             id="pills-upcoming-tab" data-bs-toggle="pill" data-bs-target="#pills-upcoming" type="button"
@@ -125,127 +125,275 @@
                     <div class="tab-pane fade show active" id="pills-upcoming" role="tabpanel">
                         <div id="upcoming-container"></div>
                     </div>
-
                     <div class="tab-pane fade" id="pills-pending" role="tabpanel">
                         <div id="pending-container"></div>
                     </div>
-
                     <div class="tab-pane fade" id="pills-completed" role="tabpanel">
                         <div id="completed-container"></div>
                     </div>
-
                     <div class="tab-pane fade" id="pills-cancelled" role="tabpanel">
                         <div id="cancelled-container"></div>
                     </div>
                 </div>
             </main>
-
-            <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-
-            <script>
-                // Bookings Data
-                const bookingsData = {
-                    upcoming: [
-                        {
-                            icon: "bi-droplet-fill",
-                            iconColor: "text-primary",
-                            title: "Leak Repair (Plumbing)",
-                            date: "March 27, 2026",
-                            time: "10:00 AM",
-                            technician: "Juan Dela Cruz",
-                            status: "Confirmed",
-                            statusClass: "bg-success-subtle text-success"
-                        }
-                    ],
-                    pending: [],
-                    completed: [
-                        {
-                            icon: "bi-lightning-charge-fill",
-                            iconColor: "text-warning",
-                            title: "Outlet & Switch Repair (Electrical)",
-                            date: "March 19, 2026",
-                            time: "2:37 PM",
-                            technician: "Alden Ash",
-                            status: "Completed",
-                            statusClass: "bg-success text-white"
-                        }
-                    ],
-                    cancelled: []
-                };
-
-                function renderBookings(category, data) {
-                    const container = document.getElementById(`${category}-container`);
-                    
-                    if (data.length === 0) {
-                        container.innerHTML = `
-                            <div class="card border-0 shadow-sm rounded-4 d-flex flex-column align-items-center justify-content-center"
-                                style="min-height: 250px; background-color: #ffffff;">
-                                <div class="text-center py-5">
-                                    <i class="bi ${category === 'cancelled' ? 'bi-x-circle' : 'bi-clock-history'} mb-3"
-                                        style="font-size: 3.5rem; color: ${category === 'cancelled' ? '#dc3545' : '#6c757d'}; opacity: 0.5;"></i>
-                                    <h5 class="fw-bold text-dark mb-1">No ${category} ${category === 'cancelled' ? 'bookings' : 'history'} yet</h5>
-                                    <p class="text-muted small">${category === 'cancelled' ? "You don't have any cancelled service requests at the moment." : "Check back later for your new service requests."}</p>
-                                </div>
-                            </div>
-                        `;
-                    } else {
-                        container.innerHTML = data.map(booking => `
-                            <div class="card border-0 shadow-sm rounded-4 p-3 mb-3">
-                                <div class="row align-items-center">
-                                    <div class="col-auto">
-                                        <div class="bg-light p-3 rounded-4">
-                                            <i class="bi ${booking.icon} ${booking.iconColor} fs-3"></i>
-                                        </div>
-                                    </div>
-                                    <div class="col">
-                                        <h5 class="fw-bold mb-1">${booking.title}</h5>
-                                        <p class="text-muted mb-0 small"><i class="bi bi-calendar3 me-2"></i>${booking.date} | ${booking.time}</p>
-                                        <p class="text-muted mb-0 small"><i class="bi bi-person me-2"></i>Technician: ${booking.technician}</p>
-                                    </div>
-                                    <div class="col-auto d-flex flex-column align-items-end justify-content-center">
-                                        <span class="badge ${booking.statusClass} rounded-pill px-3 py-2 mb-2 w-100">${booking.status}</span>
-                                        <button class="btn btn-sm rounded-pill px-4 fw-bold text-white shadow-sm"
-                                            style="background-color: #a23a3a; border: none; font-size: 0.8rem;">
-                                            View Details
-                                        </button>
-                                    </div>
-                                </div>
-                            </div>
-                        `).join('');
-                    }
-                }
-
-                // Render all tabs
-                Object.keys(bookingsData).forEach(category => {
-                    renderBookings(category, bookingsData[category]);
-                });
-
-                const dashboardLink = document.getElementById('dashboardLink');
-
-                servicesToggle.addEventListener('click', function () {
-                    dashboardLink.classList.remove('active-link');
-                    dashboardLink.classList.add('opacity-75');
-
-                    this.classList.add('clicked-service');
-                    this.classList.remove('opacity-75');
-                });
-
-                const navLinks = document.querySelectorAll('.nav-link');
-
-                navLinks.forEach(link => {
-                    link.addEventListener('click', function () {
-                        document.querySelector('.nav-link.active').classList.remove('active');
-                        this.classList.add('active');
-                    });
-                });
-
-                function repairNav(data){
-                    window.location.href = `/user/repairs?repair=${data.name}`;
-                }
-            </script>
-
         </div>
     </div>
-</body>
 
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+    <script>
+
+        // ─── API ──────────────────────────────────────────────────────────────
+
+        async function fetchBookings() {
+            try {
+                const response = await fetch('/api/fetchUserTickets');
+                if (!response.ok) throw new Error('Failed to fetch bookings');
+                return await response.json();
+            } catch (error) {
+                console.error(error);
+                return [];
+            }
+        }
+
+
+        // ─── Helpers ──────────────────────────────────────────────────────────
+
+        /**
+         * Maps a booking `state` to one of the four tab categories.
+         *
+         * API states observed:  'open' | 'assigned' | 'completed' | 'cancelled'
+         * Tab categories:       upcoming | pending | completed | cancelled
+         *
+         * 'assigned' → a technician is confirmed → Upcoming
+         * 'open'     → waiting for assignment    → Pending
+         */
+        const STATE_TAB_MAP = {
+            assigned:  'upcoming',
+            confirmed: 'upcoming',
+            open:      'pending',
+            pending:   'pending',
+            completed: 'completed',
+            done:      'completed',
+            cancelled: 'cancelled',
+            canceled:  'cancelled'
+        };
+
+        /**
+         * Fallback icon lookup when the API returns null for `icon`.
+         * Keyed on lowercased service type.
+         */
+        const TYPE_ICON_MAP = {
+            plumbing:    { icon: 'bi-droplet-fill',          color: 'text-primary'   },
+            electrical:  { icon: 'bi-lightning-charge-fill', color: 'text-warning'   },
+            carpentry:   { icon: 'bi-tools',                 color: 'text-secondary' },
+            maintenance: { icon: 'bi-house-check-fill',      color: 'text-success'   },
+            aircon:      { icon: 'bi-wind',                  color: 'text-info'      },
+            tool:        { icon: 'bi-briefcase-fill',        color: 'text-dark'      }
+        };
+
+        const DEFAULT_ICON = { icon: 'bi-wrench-adjustable', color: 'text-muted' };
+
+        /**
+         * Resolves the Bootstrap icon class and colour for a booking row.
+         */
+        function resolveIcon(booking) {
+            if (booking.icon) return { icon: booking.icon, color: 'text-primary' };
+            const key = (booking.type || '').toLowerCase();
+            return TYPE_ICON_MAP[key] || DEFAULT_ICON;
+        }
+
+        /**
+         * Resolves the badge style for a given state.
+         */
+        const STATE_BADGE_MAP = {
+            upcoming:  { label: 'Confirmed',  cls: 'bg-success-subtle text-success' },
+            pending:   { label: 'Pending',    cls: 'bg-warning-subtle text-warning' },
+            completed: { label: 'Completed',  cls: 'bg-success text-white'          },
+            cancelled: { label: 'Cancelled',  cls: 'bg-danger-subtle text-danger'   }
+        };
+
+        /**
+         * Formats `order_date` regardless of whether it arrives as a Unix
+         * timestamp (number) or an ISO date string ('2026-03-23').
+         */
+        function formatDate(orderDate) {
+            if (!orderDate) return 'N/A';
+
+            let d;
+            if (typeof orderDate === 'number') {
+                // Unix seconds → milliseconds
+                d = new Date(orderDate * 1000);
+            } else {
+                d = new Date(orderDate);
+            }
+
+            if (isNaN(d)) return String(orderDate);
+
+            return d.toLocaleDateString('en-US', {
+                year:  'numeric',
+                month: 'long',
+                day:   'numeric'
+            });
+        }
+
+        /**
+         * Builds a readable technician label from the booking row.
+         * Falls back to 'Unassigned' when both name fields are null.
+         */
+        function resolveTechnician(booking) {
+            const { first_name, last_name } = booking;
+            if (first_name || last_name) {
+                return [first_name, last_name].filter(Boolean).join(' ');
+            }
+            return 'Unassigned';
+        }
+
+        /**
+         * Capitalises the first letter of each word in a string.
+         */
+        function toTitleCase(str) {
+            return (str || '').replace(/\b\w/g, c => c.toUpperCase());
+        }
+
+
+        // ─── Data transform ───────────────────────────────────────────────────
+
+        /**
+         * Converts the flat API array into the four tab buckets.
+         */
+        function groupBookings(rawBookings) {
+            const groups = { upcoming: [], pending: [], completed: [], cancelled: [] };
+
+            rawBookings.forEach(booking => {
+                const state = (booking.state || '').toLowerCase();
+                const tab   = STATE_TAB_MAP[state] || 'pending';
+                const { icon, color } = resolveIcon(booking);
+                const badge = STATE_BADGE_MAP[tab];
+
+                const serviceLabel = [
+                    toTitleCase(booking.sub_type || booking.type),
+                    toTitleCase(booking.type)
+                ]
+                    .filter(Boolean)
+                    .filter((v, i, a) => a.indexOf(v) === i) // deduplicate
+                    .join(' — ');
+
+                groups[tab].push({
+                    id:          booking.id,
+                    icon,
+                    iconColor:   color,
+                    title:       serviceLabel,
+                    description: booking.description || '',
+                    date:        formatDate(booking.order_date),
+                    address:     booking.address || 'No address provided',
+                    technician:  resolveTechnician(booking),
+                    status:      badge.label,
+                    statusClass: badge.cls
+                });
+            });
+
+            return groups;
+        }
+
+
+        // ─── Rendering ────────────────────────────────────────────────────────
+
+        function renderBookings(category, data) {
+            const container = document.getElementById(`${category}-container`);
+
+            const emptyIcons = {
+                upcoming:  { icon: 'bi-calendar-x',   color: '#6c757d' },
+                pending:   { icon: 'bi-hourglass',     color: '#f0ad4e' },
+                completed: { icon: 'bi-clock-history', color: '#6c757d' },
+                cancelled: { icon: 'bi-x-circle',      color: '#dc3545' }
+            };
+
+            const emptyMessages = {
+                upcoming:  { title: 'No upcoming bookings',  sub: 'You have no confirmed service appointments yet.' },
+                pending:   { title: 'No pending bookings',   sub: 'All your requests have been addressed.' },
+                completed: { title: 'No completed history',  sub: 'Check back after your services are done.' },
+                cancelled: { title: 'No cancelled bookings', sub: "You don't have any cancelled service requests." }
+            };
+
+            if (data.length === 0) {
+                const ei = emptyIcons[category];
+                const em = emptyMessages[category];
+                container.innerHTML = `
+                    <div class="card border-0 shadow-sm rounded-4 d-flex flex-column align-items-center justify-content-center"
+                        style="min-height: 250px; background-color: #ffffff;">
+                        <div class="text-center py-5">
+                            <i class="bi ${ei.icon} mb-3" style="font-size: 3.5rem; color: ${ei.color}; opacity: 0.5;"></i>
+                            <h5 class="fw-bold text-dark mb-1">${em.title}</h5>
+                            <p class="text-muted small">${em.sub}</p>
+                        </div>
+                    </div>
+                `;
+                return;
+            }
+
+            container.innerHTML = data.map(booking => `
+                <div class="card border-0 shadow-sm rounded-4 p-3 mb-3">
+                    <div class="row align-items-center">
+                        <div class="col-auto">
+                            <div class="bg-light p-3 rounded-4">
+                                <i class="bi ${booking.icon} ${booking.iconColor} fs-3"></i>
+                            </div>
+                        </div>
+                        <div class="col">
+                            <h5 class="fw-bold mb-1">${booking.title}</h5>
+                            <p class="text-muted mb-0 small"><i class="bi bi-card-text me-2"></i>${booking.description}</p>
+                            <p class="text-muted mb-0 small"><i class="bi bi-calendar3 me-2"></i>${booking.date}</p>
+                            <p class="text-muted mb-0 small"><i class="bi bi-geo-alt me-2"></i>${booking.address}</p>
+                            <p class="text-muted mb-0 small"><i class="bi bi-person me-2"></i>Technician: ${booking.technician}</p>
+                        </div>
+                        <div class="col-auto d-flex flex-column align-items-end justify-content-center">
+                            <span class="badge ${booking.statusClass} rounded-pill px-3 py-2 mb-2 w-100 text-center">
+                                ${booking.status}
+                            </span>
+                            <button class="btn btn-sm rounded-pill px-4 fw-bold text-white shadow-sm"
+                                style="background-color: #a23a3a; border: none; font-size: 0.8rem;"
+                                onclick="viewDetails(${booking.id})">
+                                View Details
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function viewDetails(bookingId) {
+            // TODO: navigate to or open a detail modal for the given booking ID
+            console.log('View details for booking:', bookingId);
+        }
+
+
+        // ─── Nav helpers ──────────────────────────────────────────────────────
+
+        function repairNav(el) {
+            window.location.href = `/user/repairs?repair=${el.name}`;
+        }
+
+        const servicesToggle = document.getElementById('servicesToggle');
+        const dashboardLink  = document.getElementById('dashboardLink');
+
+        servicesToggle.addEventListener('click', function () {
+            dashboardLink.classList.remove('active-link');
+            dashboardLink.classList.add('opacity-75');
+            this.classList.add('clicked-service');
+            this.classList.remove('opacity-75');
+        });
+
+
+        // ─── Boot ─────────────────────────────────────────────────────────────
+
+        window.onload = async () => {
+            const raw    = await fetchBookings();
+            const groups = groupBookings(raw);
+            Object.keys(groups).forEach(category => renderBookings(category, groups[category]));
+        };
+
+    </script>
+
+</body>
 </html>

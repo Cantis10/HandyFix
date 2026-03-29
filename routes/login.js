@@ -9,7 +9,7 @@ app.post("/login", async (req, res) => {
     const { email, password } = req.body;
 
     const result = await db.execute({
-      sql: "SELECT id, email, password FROM users WHERE email = ?",
+      sql: "SELECT id, email, type, password FROM users WHERE email = ?",
       args: [email],
     });
 
@@ -24,7 +24,7 @@ app.post("/login", async (req, res) => {
     }
 
     const token = jwt.sign(
-      { id: user.id, email: user.email },
+      { id: user.id, email: user.email, role: user.type },
       JWT_SECRET,
       { expiresIn: "24h" }
     );
@@ -36,7 +36,7 @@ app.post("/login", async (req, res) => {
     });
 
 
-    res.json({ success: true, user: { id: user.id, email: user.email } });
+    res.json({ success: true, user: { id: user.id, email: user.email, type: user.type } });
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: "Server error" });
