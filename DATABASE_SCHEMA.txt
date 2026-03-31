@@ -1,0 +1,62 @@
+CREATE TABLE `messages` (
+	`id` integer PRIMARY KEY AUTOINCREMENT,
+	`ticket_id` integer,
+	`user_id` integer,
+	`contractor_id` integer,
+	`message` text(100),
+	`messager_id` integer,
+	`message_date` numeric,
+	CONSTRAINT `fk_messages_ticket_id_tickets_id_fk` FOREIGN KEY (`ticket_id`) REFERENCES `tickets`(`id`),
+	CONSTRAINT `fk_messages_contractor_id_users_id_fk` FOREIGN KEY (`contractor_id`) REFERENCES `users`(`id`),
+	CONSTRAINT `fk_messages_user_id_users_id_fk` FOREIGN KEY (`user_id`) REFERENCES `users`(`id`)
+);
+CREATE TABLE `tickets` (
+	`id` integer PRIMARY KEY AUTOINCREMENT,
+	`user_id` integer,
+	`order_date` numeric,
+	`type` text(100),
+	`sub_type` text(100),
+	`description` text,
+	`state` text(100) DEFAULT 'open',
+	`address` text,
+	CONSTRAINT `fk_tickets_user_id_users_id_fk` FOREIGN KEY (`user_id`) REFERENCES `users`(`id`)
+);
+CREATE TABLE `fixes` (
+	`id` integer PRIMARY KEY AUTOINCREMENT,
+	`service` text(50),
+	`sub_service` text(255),
+	`price_low` integer DEFAULT 0,
+	`price_high` integer DEFAULT 0,
+	`description` text DEFAULT 'data!',
+	`icon` text
+);
+CREATE TABLE `assignments` (
+	`id` integer PRIMARY KEY AUTOINCREMENT,
+	`user_id` integer,
+	`contractor_id` integer,
+	`reservation` text,
+	`ticket_id` text,
+	CONSTRAINT `fk_assignments_contractor_id_users_id_fk` FOREIGN KEY (`contractor_id`) REFERENCES `users`(`id`),
+	CONSTRAINT `fk_assignments_user_id_users_id_fk` FOREIGN KEY (`user_id`) REFERENCES `users`(`id`)
+);
+CREATE TABLE `users` (
+	`id` integer PRIMARY KEY AUTOINCREMENT,
+	`first_name` text(100) NOT NULL,
+	`last_name` text(100) NOT NULL,
+	`age` integer,
+	`email` text(255) UNIQUE,
+	`password` text(255) NOT NULL,
+	`creation_date` numeric,
+	`contact_number` text(20),
+	`address` text(255),
+	`latitude` numeric,
+	`longitude` numeric,
+	`type` text(100) DEFAULT user NOT NULL
+);
+CREATE TABLE `ratings` (
+	`id` integer PRIMARY KEY,
+	`rating` integer,
+	`contractor_id` integer,
+	`user_id` integer,
+	CONSTRAINT `rating_contractor_id_user_id` FOREIGN KEY (`id`) REFERENCES `users`(`id`)
+);

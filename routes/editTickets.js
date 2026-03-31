@@ -4,7 +4,6 @@ const db = require("./database");
 const cookieParser = require("cookie-parser");
 const jwt = require("jsonwebtoken");
 
-
 app.use(cookieParser());
 /**
 CREATE TABLE tickets (
@@ -38,7 +37,8 @@ app.get("/fetchUserTickets", async (req, res) => {
 
     console.log("Fetching tickets for email:", email);
 
-    const result = await db.execute(`
+    const result = await db.execute(
+      `
  
 SELECT
     t.*,
@@ -56,9 +56,9 @@ LEFT JOIN users c ON a.contractor_id = c.id
 LEFT JOIN fixes f ON f.service = t.type
 WHERE u.email = ?
 GROUP BY t.id;
-       `, [
-      email,
-    ]);
+       `,
+      [email],
+    );
     console.log("Fetched tickets:", result.rows);
     res.json(result.rows);
   } catch (err) {
@@ -67,6 +67,125 @@ GROUP BY t.id;
   }
 });
 
+app.get("/fetchPendingContractorCountTickets", async (req, res) => {
+  try {
+    const decoded = jwt.decode(req.cookies.auth);
+    const email = decoded.email;
+
+    console.log("Fetching pending contractor count for email:", email);
+
+    const result = await db.execute(
+      `
+      SELECT COUNT(*) as count FROM assignments a
+      INNER JOIN users u ON a.contractor_id = u.id
+      INNER JOIN tickets t ON a.ticket_id = t.id
+      WHERE u.email = ? AND t.state != 'closed' OR t.state != 'cancelled';
+    `,
+      [email],
+    );
+    console.log("Fetched pending contractor count:", result.rows);
+    res.json(result.rows);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Server error" });
+  }
+});
+
+app.get("/fetchCancelledContractorCountTickets", async (req, res) => {
+  try {
+    const decoded = jwt.decode(req.cookies.auth);
+    const email = decoded.email;
+
+    console.log("Fetching cancelled contractor count for email:", email);
+
+    const result = await db.execute(
+      `
+      SELECT COUNT(*) as count FROM assignments a
+      INNER JOIN users u ON a.contractor_id = u.id
+      INNER JOIN tickets t ON a.ticket_id = t.id
+      WHERE u.email = ? AND t.state = 'cancelled';
+    `,
+      [email],
+    );
+    console.log("Fetched cancelled contractor count:", result.rows);
+    res.json(result.rows);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Server error" });
+  }
+});
+
+app.get("/fetchCompletedContractorCountTickets", async (req, res) => {
+  try {
+    const decoded = jwt.decode(req.cookies.auth);
+    const email = decoded.email;
+
+    console.log("Fetching completed contractor count for email:", email);
+
+    const result = await db.execute(
+      `
+      SELECT COUNT(*) as count FROM assignments a
+      INNER JOIN users u ON a.contractor_id = u.id
+      INNER JOIN tickets t ON a.ticket_id = t.id
+      WHERE u.email = ? AND t.state = 'closed';
+    `,
+      [email],
+    );
+    console.log("Fetched completed contractor count:", result.rows);
+    res.json(result.rows);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Server error" });
+  }
+});
+
+app.get("/fetchTotalContractorCountTickets", async (req, res) => {
+  try {
+    const decoded = jwt.decode(req.cookies.auth);
+    const email = decoded.email;
+
+    console.log("Fetching contractor count for email:", email);
+    const result = await db.execute(
+      `
+      SELECT COUNT(*) as count FROM assignments a
+      INNER JOIN users u ON a.contractor_id = u.id
+      INNER JOIN tickets t ON a.ticket_id = t.id
+      WHERE u.email = ?;
+    `,
+      [email],
+    );
+    console.log("Fetched contractor count:", result.rows);
+    res.json(result.rows);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Server error" });
+  }
+});
+
+app.get("/fetchAllUpcomingContractorTickets", async (req, res) => {
+  //GET ALL TICKETSFOR CONTRACTOR THAT IS NOT CLOSED OR CANCELLED
+  try {
+    const decoded = jwt.decode(req.cookies.auth);
+    const email = decoded.email;
+
+    console.log("Fetching upcoming tickets for email:", email);
+
+    const result = await db.execute(
+      `
+      SELECT a.*, t.*  FROM assignments a
+      INNER JOIN users u ON a.contractor_id = u.id
+      INNER JOIN tickets t ON a.ticket_id = t.id
+      WHERE u.email = ? AND t.state != 'closed' AND t.state != 'cancelled';
+    `,
+      [email],
+    );
+    console.log("Fetched tickets:", result.rows);
+    res.json(result.rows);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Server error" });
+  }
+});
 app.get("/fetchTicket/:id", async (req, res) => {
   console.log(req.params.id);
   try {

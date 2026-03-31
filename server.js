@@ -47,6 +47,8 @@ app.use("/api/", fetchMessagesRouter);
 const customDatabaseCheckerRouter = require("./routes/customDatabaseChecker");
 app.use("/api/databaseChecker/", customDatabaseCheckerRouter);
 
+const editRatingsRouter = require("./routes/editRatings");
+app.use("/api/", editRatingsRouter);
 app.listen(PORT, () => {
   console.log(`Server running at http://localhost:${PORT}`);
 });

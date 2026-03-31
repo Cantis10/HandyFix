@@ -12,9 +12,9 @@ app.get("/fetchMessages", async (req, res) => {
     const email = decoded.email;
 
     console.log("Fetching messages for email:", email);
-    
 
-    const result = await db.execute(`
+    const result = await db.execute(
+      `
 SELECT m.*
 FROM messages m
 INNER JOIN tickets t
@@ -22,9 +22,11 @@ INNER JOIN tickets t
 INNER JOIN users u
     ON t.user_id = u.id
 WHERE u.email = ?;
-       `, [email]);
+       `,
+      [email],
+    );
 
-       console.log("Messages fetched:", result.rows);
+    console.log("Messages fetched:", result.rows);
 
     res.json(result.rows);
   } catch (err) {
@@ -33,6 +35,37 @@ WHERE u.email = ?;
   }
 });
 
+app.get("/fetchMessagesContractor", async (req, res) => {
+  try {
+    const decoded = jwt.decode(req.cookies.auth);
+    const email = decoded.email;
+
+    console.log("Fetching messages for email:", email);
+
+    const result = await db.execute(
+      `
+SELECT m.*
+FROM messages m
+INNER JOIN tickets t
+    ON m.ticket_id = t.id
+INNER JOIN users u
+    ON t.user_id = u.id
+INNER JOIN assignments a
+    ON t.id = a.ticket_id
+WHERE a.contractor_id = (SELECT id FROM users WHERE email = ?);
+
+       `,
+      [email],
+    );
+
+    console.log("Messages fetched:", result.rows);
+
+    res.json(result.rows);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Server error" });
+  }
+});
 
 module.exports = app;
 //text

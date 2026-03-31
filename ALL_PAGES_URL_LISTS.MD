@@ -1,16 +1,20 @@
 HOW TO RUN: In terminal, type in "npm run dev"
 go to port, and press forwarded adress of port 3000
 
+DATABASES:
+
+http://localhost:3000/api/databaseChecker/home
 PUBLIC (/){
-    /
+/
 
     /login
 
     /register
+
 }
 
 USER (/user){
-    /user/
+/user/
 
     /user/booking
 
@@ -19,17 +23,17 @@ USER (/user){
     /user/repairs/:data1/:data2
 
     /user/initiaterepair/:data1/:data2
+
 }
 
-
- ADMIN (/admin){
-    /admin/
+ADMIN (/admin){
+/admin/
 
     /admin/service
 
     /admin/contractor
 
-    /admin/customers 
+    /admin/customers
 
     /admin/assignment
 
@@ -38,6 +42,7 @@ USER (/user){
     /admin/reports
 
     /admin/settings
+
 }
 
 CONTRACTOR (/contractor){
@@ -49,5 +54,3 @@ CONTRACTOR (/contractor){
     /contractor/profile
 
 }
-
-
