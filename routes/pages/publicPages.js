@@ -23,10 +23,16 @@ app.get("/", (req, res) => {
 });
 
 app.get("/login", (req, res) => {
+  const decoded = jwt.decode(req.cookies.auth);
+
+  res.clearCookie("auth");
+
   return res.sendFile(path.join(__dirname, "../../frontend/public/login.html"));
 });
 
 app.get("/register", (req, res) => {
+  res.clearCookie("auth");
+
   return res.sendFile(
     path.join(__dirname, "../../frontend/public/register.html"),
   );
