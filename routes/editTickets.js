@@ -520,4 +520,38 @@ app.post("/AssignContractor", async (req, res) => {
   }
 });
 
+app.get("/fetchAssignments", async (req, res) => {
+  try {
+    /*
+    	`id` integer PRIMARY KEY AUTOINCREMENT,
+	`user_id` integer,
+	`contractor_id` integer,
+	`reservation` text,
+	`ticket_id` text,
+	CONSTRAINT `fk_assignments_contractor_id_users_id_fk` FOREIGN KEY (`contractor_id`) REFERENCES `users`(`id`),
+	CONSTRAINT `fk_assignments_user_id_users_id_fk` FOREIGN KEY (`user_id`) REFERENCES `users`(`id`)
+
+    
+    
+    
+    fetch all tickets, return id, costumers name, contractors name, fetch both names from user ID, looked with user_id and contractor_id */
+    const result = await db.execute(
+      `
+SELECT a.*, u1.first_name AS customer_first_name, u1.last_name AS customer_last_name, u2.first_name AS contractor_first_name, u2.last_name AS contractor_last_name, t.state AS ticket_state
+FROM assignments a
+INNER JOIN users u1 ON a.user_id = u1.id
+INNER JOIN users u2 ON a.contractor_id = u2.id
+INNER JOIN tickets t ON a.ticket_id = t.id
+
+      `,
+    );
+
+    console.log("Fetched assignment:", result.rows);
+    res.json(result.rows);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Server error" });
+  }
+});
+
 module.exports = app;

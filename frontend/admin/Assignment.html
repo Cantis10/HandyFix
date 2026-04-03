@@ -132,6 +132,8 @@
       min-width: 90px;
       text-align: center;
       color: white;
+      justify-content: center;
+      margin-top: auto;
     }
 
     .status-pending   { background: var(--maroon); }
@@ -221,55 +223,59 @@
           <th>Actions</th>
         </tr>
       </thead>
-      <tbody>
-            <td>1023</td>
-            <td>Juan D</td>
-            <td>Mark Santos</td>
-            <td>Plumbing</td>
-            <td><span class="status status-assigned">Assigned</span></td>
-            <td class ="action-cell">
-              <select onchange="updateStatus(this)">
-                <option value="pending">Pending</option>
-                <option value="assigned" selected>Assigned</option>
-                <option value="completed">Completed</option>
-              </select>"
-            </td>
-          </tr>
-            <td>1024</td>
-            <td>Ana S</td>
-            <td>Leo Cruz</td>
-            <td>Electrical</td>
-            <td><span class="status status-completed">Completed</span></td>
-           <td class ="action-cell">
-              <select onchange="updateStatus(this)">
-                <option value="pending">Pending</option>
-                <option value="assigned" >Assigned</option>
-                <option value="completed" selected>Completed</option>
-              </select>"
-            </td>
-          </tr>
-  
+      <tbody id="assignmentTableBody">
+        <!-- Table rows will be populated by JavaScript -->
       </tbody>
     </table>
   </div>
-</div>
 </main>
 
 <script>
-  document.getElementById('menuBtn').addEventListener('click', () => {
-    document.getElementById('sidebar').classList.toggle('open');
-  });
+  // Data array of assignment objects
 
-    document.querySelectorAll('.sidebar li').forEach(item => {
-    item.addEventListener('click', function() {
-      const page = this.getAttribute('data-page');
-      if (page) {
-        window.location.href = page;
-      }
+
+  // Function to populate the table
+  async function populateTable() {
+
+    assignments = await fetch('/api/fetchAssignments')
+      .then(response => response.json())
+      .catch(error => {
+        console.error('Error fetching assignments:', error);
+        return [];
+      });
+    const tbody = document.getElementById('assignmentTableBody');
+    tbody.innerHTML = ''; // Clear existing rows
+
+    assignments.forEach(assignment => {
+      const row = document.createElement('tr');
+
+      const statusClass = `status-${assignment.ticket_state}`;
+      const statusText = assignment.ticket_state.charAt(0).toUpperCase() + assignment.ticket_state.slice(1);
+      //a.*, u1.first_name AS customer_first_name, u1.last_name AS customer_last_name, u2.first_name AS contractor_first_name, u2.last_name AS contractor_last_name
+      row.innerHTML = `
+        <td>${assignment.jobId}</td>
+        <td>${assignment.customer_first_name} ${assignment.customer_last_name}</td>
+        <td>${assignment.contractor_first_name} ${assignment.contractor_last_name}</td>
+        <td>${assignment.service_name}</td>
+        <td class="status ${statusClass}">${statusText}</td>
+        <td class="action-cell">
+          <select onchange="updateStatus(this)">
+            <option value="pending" ${assignment.ticket_state === 'pending' ? 'selected' : ''}>Pending</option>
+            <option value="assigned" ${assignment.ticket_state === 'assigned' ? 'selected' : ''}>Assigned</option>
+            <option value="completed" ${assignment.ticket_state === 'completed' ? 'selected' : ''}>Completed</option>
+          </select>
+        </td>
+      `;
+
+      tbody.appendChild(row);
     });
-  });
+  }
 
+  // Call populateTable on page load
   document.addEventListener('DOMContentLoaded', () => {
+    populateTable();
+
+    // Existing sidebar logic
     const currentFile = window.location.pathname.split('/').pop() || 'Assignment.html';
     document.querySelectorAll('.sidebar li').forEach(li => {
       const page = li.getAttribute('data-page');
@@ -281,6 +287,22 @@
     });
   });
 
+  // Hamburger menu toggle
+  document.getElementById('menuBtn').addEventListener('click', () => {
+    document.getElementById('sidebar').classList.toggle('open');
+  });
+
+  // Sidebar navigation
+  document.querySelectorAll('.sidebar li').forEach(item => {
+    item.addEventListener('click', function() {
+      const page = this.getAttribute('data-page');
+      if (page) {
+        window.location.href = page;
+      }
+    });
+  });
+
+  // Update status function (modified to update the assignments array if needed)
   function updateStatus(select) {
     const row = select.closest('tr');
     const statusCell = row.querySelector('.status');
@@ -303,6 +325,13 @@
     }
 
     statusCell.textContent = statusText;
+
+    // Optionally update the assignments array (find by jobId)
+    const jobId = parseInt(row.cells[0].textContent);
+    const assignment = assignments.find(a => a.jobId === jobId);
+    if (assignment) {
+      assignment.status = newStatus;
+    }
   }
 </script>
 
