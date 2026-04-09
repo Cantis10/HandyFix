@@ -239,93 +239,133 @@
 </div>
 <script src="contractor.js"></script>
 <script>
-
-
-//window.location.href = "/api/fetchRatings";
-//window.location.href = "/api/fetchPendingContractorCountTickets";
-//window.location.href = "/api/fetchCancelledContractorCountTickets";
-//window.location.href = "/api/fetchCompletedContractorCountTickets";
-//window.location.href = "/api/fetchTotalContractorCountTickets";
-//window.location.href = "/api/fetchAllUpcomingContractorTickets";
-/* ── Dashboard Page Script ── */
 document.addEventListener('DOMContentLoaded', () => {
-  renderUpcoming();
+  initStatCards();
+  fetchDashboardData();
   renderActivity();
-  animateCounters();
 });
 
-/* Upcoming */
-function renderUpcoming() {
-  const items = [
-    { day:'21', mon:'Mar', title:'Electrical Wiring Install', client:'Maria Santos', time:'9:00 AM', status:'confirmed' },
-    { day:'22', mon:'Mar', title:'Plumbing Repair',           client:'Carlo Reyes',  time:'2:00 PM', status:'pending' },
-    { day:'24', mon:'Mar', title:'Ceiling Repaint',           client:'Ana Lim',      time:'8:00 AM', status:'confirmed' },
-  ];
-  const wrap = document.getElementById('upcomingList');
-  if (!wrap) return;
-  items.forEach(it => {
-    wrap.innerHTML += `
-      <div class="upcoming-item">
-        <div class="upcoming-date">
-          <div class="day">${it.day}</div>
-          <div class="mon">${it.mon}</div>
-        </div>
-        <div class="upcoming-body">
-          <div class="upcoming-title">${it.title}</div>
-          <div class="upcoming-client">👤 ${it.client}</div>
-        </div>
-        <div class="flex flex-col items-center gap-1">
-          <div class="upcoming-time">⏰ ${it.time}</div>
-          <span class="badge ${it.status === 'confirmed' ? 'badge-success' : 'badge-warning'}">${it.status}</span>
-        </div>
-      </div>`;
+/* Set all stat cards to "loading..." initially */
+function initStatCards() {
+  ['statTotalBookings','statCompleted','statPending','statCancelled','statRating'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.textContent = 'loading...';
   });
+  const wrap = document.getElementById('upcomingList');
+  if (wrap) wrap.innerHTML = `<div style="padding:16px;color:var(--text-muted);font-size:13px">Loading upcoming jobs...</div>`;
 }
 
-/* Activity */
+/* Fetch all dashboard data in parallel */
+async function fetchDashboardData() {
+  try {
+    const [ratingsRes, pendingRes, cancelledRes, completedRes, totalRes, upcomingRes] = await Promise.all([
+      fetch('/api/fetchRatings'),
+      fetch('/api/fetchPendingContractorCountTickets'),
+      fetch('/api/fetchCancelledContractorCountTickets'),
+      fetch('/api/fetchCompletedContractorCountTickets'),
+      fetch('/api/fetchTotalContractorCountTickets'),
+      fetch('/api/fetchAllUpcomingContractorTickets'),
+    ]);
+
+    const [ratings, pending, cancelled, completed, total, upcoming] = await Promise.all([
+      ratingsRes.json(),
+      pendingRes.json(),
+      cancelledRes.json(),
+      completedRes.json(),
+      totalRes.json(),
+      upcomingRes.json(),
+    ]);
+
+    animateCounter('statRating',        ratings[0]?.average_rating  ?? 0, true);
+    animateCounter('statPending',       pending[0]?.count            ?? 0);
+    animateCounter('statCancelled',     cancelled[0]?.count          ?? 0);
+    animateCounter('statCompleted',     completed[0]?.count          ?? 0);
+    animateCounter('statTotalBookings', total[0]?.count              ?? 0);
+
+    renderUpcoming(upcoming);
+  } catch (err) {
+    console.error('Dashboard fetch error:', err);
+    ['statTotalBookings','statCompleted','statPending','statCancelled','statRating'].forEach(id => {
+      const el = document.getElementById(id);
+      if (el) el.textContent = '—';
+    });
+    const wrap = document.getElementById('upcomingList');
+    if (wrap) wrap.innerHTML = `<div style="padding:16px;color:#ef4444;font-size:13px">Failed to load data.</div>`;
+  }
+}
+
+/* Counter animation (single) */
+function animateCounter(id, target, isFloat = false) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  let current = 0;
+  const step = target / 40;
+  const timer = setInterval(() => {
+    current = Math.min(current + step, target);
+    el.textContent = isFloat ? current.toFixed(1) : Math.floor(current);
+    if (current >= target) clearInterval(timer);
+  }, 28);
+}
+
+/* Upcoming — built from API data */
+function renderUpcoming(items = []) {
+  const wrap = document.getElementById('upcomingList');
+  if (!wrap) return;
+
+  if (!items.length) {
+    wrap.innerHTML = `<div style="padding:16px;color:var(--text-muted);font-size:13px">No upcoming jobs.</div>`;
+    return;
+  }
+
+  wrap.innerHTML = items.map(it => {
+    const date  = new Date(it.reservation);
+    const day   = isNaN(date) ? '—'  : date.getDate();
+    const mon   = isNaN(date) ? '—'  : date.toLocaleString('en-US', { month: 'short' }).toUpperCase();
+    const title = `${it.type} – ${it.sub_type}`;
+    const time  = it.reservation_low
+                    ? `${it.reservation_low}${it.reservation_high ? ' – ' + it.reservation_high : ''}`
+                    : date.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+    const status  = it.state === 'assigned' ? 'confirmed' : it.state;
+    const badgeCls = status === 'confirmed' ? 'badge-success' : 'badge-warning';
+
+    return `
+      <div class="upcoming-item">
+        <div class="upcoming-date">
+          <div class="day">${day}</div>
+          <div class="mon">${mon}</div>
+        </div>
+        <div class="upcoming-body">
+          <div class="upcoming-title">${title}</div>
+          <div class="upcoming-client">🎫 Ticket #${it.ticket_id}</div>
+        </div>
+        <div class="flex flex-col items-center gap-1">
+          <div class="upcoming-time">⏰ ${time}</div>
+          <span class="badge ${badgeCls}">${status}</span>
+        </div>
+      </div>`;
+  }).join('');
+}
+
+/* Activity — stays static for now */
 function renderActivity() {
   const items = [
-    { dot:'#22c55e', title:'Booking #B-048 Completed',        meta:'Electrical wiring — Maria Santos', time:'10 min ago' },
-    { dot:'var(--gold)', title:'New booking request received', meta:'Plumbing repair — Carlo Reyes',   time:'1 hr ago' },
-    { dot:'#818cf8', title:'Message from Ana Lim',            meta:'"Can we reschedule to 8AM?"',      time:'2 hrs ago' },
-    { dot:'#ef4444', title:'Booking #B-045 Cancelled',        meta:'Carpentry — Rex Torres',           time:'Yesterday' },
-    { dot:'var(--gold)', title:'New 5-star review received',  meta:'From Maria Santos',                time:'Yesterday' },
+    { dot:'#22c55e',        title:'Booking #B-048 Completed',        meta:'Electrical wiring — Maria Santos', time:'10 min ago' },
+    { dot:'var(--gold)',    title:'New booking request received',     meta:'Plumbing repair — Carlo Reyes',   time:'1 hr ago'   },
+    { dot:'#818cf8',        title:'Message from Ana Lim',            meta:'"Can we reschedule to 8AM?"',      time:'2 hrs ago'  },
+    { dot:'#ef4444',        title:'Booking #B-045 Cancelled',        meta:'Carpentry — Rex Torres',           time:'Yesterday'  },
+    { dot:'var(--gold)',    title:'New 5-star review received',       meta:'From Maria Santos',                time:'Yesterday'  },
   ];
   const wrap = document.getElementById('activityList');
   if (!wrap) return;
-  items.forEach(it => {
-    wrap.innerHTML += `
-      <div class="activity-item">
-        <div class="activity-dot" style="background:${it.dot}"></div>
-        <div class="activity-content">
-          <div class="activity-title">${it.title}</div>
-          <div class="activity-meta">${it.meta}</div>
-        </div>
-        <div class="activity-time">${it.time}</div>
-      </div>`;
-  });
-}
-
-/* Counter Animation */
-function animateCounters() {
-  const counters = [
-    { id: 'statTotalBookings', target: 48,   prefix: '',  suffix: '' },
-    { id: 'statCompleted',     target: 34,   prefix: '',  suffix: '' },
-    { id: 'statPending',       target: 9,    prefix: '',  suffix: '' },
-    { id: 'statCancelled',     target: 5,    prefix: '',  suffix: '' },
-    { id: 'statRating',        target: 4.8,  prefix: '',  suffix: '',  float: true },
-  ];
-  counters.forEach(c => {
-    const el = document.getElementById(c.id);
-    if (!el) return;
-    let current = 0;
-    const step = c.target / 40;
-    const timer = setInterval(() => {
-      current = Math.min(current + step, c.target);
-      el.textContent = c.prefix + (c.float ? current.toFixed(1) : Math.floor(current)) + c.suffix;
-      if (current >= c.target) clearInterval(timer);
-    }, 28);
-  });
+  wrap.innerHTML = items.map(it => `
+    <div class="activity-item">
+      <div class="activity-dot" style="background:${it.dot}"></div>
+      <div class="activity-content">
+        <div class="activity-title">${it.title}</div>
+        <div class="activity-meta">${it.meta}</div>
+      </div>
+      <div class="activity-time">${it.time}</div>
+    </div>`).join('');
 }
 </script>
 </body>
