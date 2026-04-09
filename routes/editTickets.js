@@ -567,4 +567,29 @@ INNER JOIN tickets t ON a.ticket_id = t.id
   }
 });
 
+app.get("/fetchTicketDetailsContractor", async (req, res) => {
+  try {
+    const decoded = jwt.decode(req.cookies.auth);
+    const email = decoded.email;
+
+    //fetch all the tickets with the contractor email from users, the name of user too.
+    const result = await db.execute(
+      `
+      select t.*, u.first_name||' '||u.last_name as customer_name from tickets t
+      inner join users u on t.user_id = u.id
+      inner join assignments a on t.id = a.ticket_id
+      inner join users c on a.contractor_id = c.id
+      where c.email = ? and t.state != 'closed' and t.state != 'cancelled'
+       `,
+      [email],
+    );
+
+    console.log("Fetched assignment:", result.rows);
+    res.json(result.rows);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Server error" });
+  }
+});
+
 module.exports = app;

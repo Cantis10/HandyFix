@@ -400,8 +400,8 @@
   border-radius: 3px 0 0 3px;
   background: var(--gold);
 }
-.event-item.status-pending::before   { background: var(--gold); }
-.event-item.status-confirmed::before { background: var(--success); }
+.event-item.status-open::before      { background: var(--gold); }
+.event-item.status-assigned::before  { background: var(--success); }
 .event-item.status-completed::before { background: #818cf8; }
 .event-item.status-cancelled::before { background: var(--danger); }
 .event-item:hover {
@@ -498,6 +498,32 @@
   font-size: 12px;
   color: var(--text-muted);
 }
+
+/* ── Loading State ──────────────────────────────────────── */
+.cal-loading {
+  text-align: center;
+  padding: 48px 20px;
+}
+.cal-loading-spinner {
+  width: 36px; height: 36px;
+  border: 3px solid var(--border);
+  border-top-color: var(--gold);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+  margin: 0 auto 14px;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+.cal-loading-text {
+  font-size: 13px;
+  color: var(--text-muted);
+}
+.cal-error {
+  text-align: center;
+  padding: 40px 20px;
+}
+.cal-error-icon { font-size: 36px; margin-bottom: 10px; display: block; opacity: 0.5; }
+.cal-error-title { font-size: 14px; font-weight: 600; color: var(--danger); margin-bottom: 6px; }
+.cal-error-sub { font-size: 12px; color: var(--text-muted); margin-bottom: 14px; }
 
 /* ── Event Detail Modal ─────────────────────────────────── */
 .evt-modal-icon {
@@ -604,8 +630,8 @@
   transition: opacity var(--transition);
 }
 .week-evt:hover { opacity: 0.8; }
-.week-evt.status-pending   { background: rgba(230,175,46,0.2); color: var(--gold); }
-.week-evt.status-confirmed { background: rgba(34,197,94,0.15); color: #4ade80; }
+.week-evt.status-open      { background: rgba(230,175,46,0.2); color: var(--gold); }
+.week-evt.status-assigned  { background: rgba(34,197,94,0.15); color: #4ade80; }
 .week-evt.status-completed { background: rgba(129,140,248,0.15); color: #a5b4fc; }
 .week-evt.status-cancelled { background: rgba(239,68,68,0.1); color: #f87171; }
 
@@ -790,18 +816,22 @@
 
             <!-- Grid (Month or Week) -->
             <div id="calendarBody">
-              <!-- JS rendered -->
+              <!-- Loading state shown on init -->
+              <div class="cal-loading">
+                <div class="cal-loading-spinner"></div>
+                <div class="cal-loading-text">Loading tickets…</div>
+              </div>
             </div>
 
             <!-- Footer Legend -->
             <div class="cal-footer">
               <div class="cal-legend">
-                <div class="leg-item"><div class="leg-dot" style="background:var(--gold);"></div>Pending</div>
-                <div class="leg-item"><div class="leg-dot" style="background:var(--success);"></div>Confirmed</div>
+                <div class="leg-item"><div class="leg-dot" style="background:var(--gold);"></div>Open</div>
+                <div class="leg-item"><div class="leg-dot" style="background:var(--success);"></div>Assigned</div>
                 <div class="leg-item"><div class="leg-dot" style="background:#818cf8;"></div>Completed</div>
                 <div class="leg-item"><div class="leg-dot" style="background:var(--danger);"></div>Cancelled</div>
               </div>
-              <div style="font-size:11px;color:var(--text-muted);" id="calSummaryFooter">0 services this month</div>
+              <div style="font-size:11px;color:var(--text-muted);" id="calSummaryFooter">Loading…</div>
             </div>
           </div>
         </div>
@@ -817,15 +847,15 @@
             <div class="today-stats">
               <div class="ts-item">
                 <div class="ts-val" id="todayCount">0</div>
-                <div class="ts-lbl">Services</div>
+                <div class="ts-lbl">Tickets</div>
               </div>
               <div class="ts-item">
                 <div class="ts-val" id="todayPending">0</div>
-                <div class="ts-lbl">Pending</div>
+                <div class="ts-lbl">Open</div>
               </div>
               <div class="ts-item">
                 <div class="ts-val" id="todayConfirmed">0</div>
-                <div class="ts-lbl">Confirmed</div>
+                <div class="ts-lbl">Assigned</div>
               </div>
             </div>
           </div>
@@ -834,15 +864,15 @@
           <div class="month-summary-card">
             <div class="summary-title">Month Summary</div>
             <div class="summary-row">
-              <span class="summary-label"><span>📋</span> Total Services</span>
+              <span class="summary-label"><span>📋</span> Total Tickets</span>
               <span class="summary-val gold" id="sumTotal">0</span>
             </div>
             <div class="summary-row">
-              <span class="summary-label"><span>⏳</span> Pending</span>
+              <span class="summary-label"><span>⏳</span> Open</span>
               <span class="summary-val gold" id="sumPending">0</span>
             </div>
             <div class="summary-row">
-              <span class="summary-label"><span>✅</span> Confirmed</span>
+              <span class="summary-label"><span>✅</span> Assigned</span>
               <span class="summary-val green" id="sumConfirmed">0</span>
             </div>
             <div class="summary-row">
@@ -860,7 +890,7 @@
             <div class="day-panel-header">
               <div>
                 <div class="day-panel-title" id="dayPanelTitle">Select a Date</div>
-                <div class="day-panel-sub" id="dayPanelSub">Click any day to view services</div>
+                <div class="day-panel-sub" id="dayPanelSub">Click any day to view tickets</div>
               </div>
               <button class="btn btn-xs btn-outline-gold" id="addForDayBtn" onclick="openAddEventModal(selectedDateKey)" style="display:none;">
                 ＋ Add
@@ -870,7 +900,7 @@
               <div class="empty-day">
                 <span class="empty-day-icon">📅</span>
                 <div class="empty-day-title">No date selected</div>
-                <div class="empty-day-sub">Click a day on the calendar to see its scheduled services.</div>
+                <div class="empty-day-sub">Click a day on the calendar to see its scheduled tickets.</div>
               </div>
             </div>
           </div>
@@ -889,7 +919,7 @@
 <div class="modal-overlay" id="eventDetailModal">
   <div class="modal" style="max-width:520px;">
     <div class="modal-header">
-      <div class="modal-title" id="detailModalTitle">Service Details</div>
+      <div class="modal-title" id="detailModalTitle">Ticket Details</div>
       <button class="modal-close" onclick="closeModal('eventDetailModal')">✕</button>
     </div>
     <div id="eventDetailBody"><!-- JS --></div>
@@ -925,6 +955,7 @@
             <option value="Cleaning">🧹 Cleaning</option>
             <option value="HVAC">❄️ HVAC</option>
             <option value="Roofing">🏠 Roofing</option>
+            <option value="Maintenance">🛠️ Maintenance</option>
             <option value="Other">🔩 Other</option>
           </select>
         </div>
@@ -947,8 +978,8 @@
         <div class="form-group">
           <label class="form-label">Status</label>
           <select class="form-input" id="evtStatus">
-            <option value="pending">⏳ Pending</option>
-            <option value="confirmed">✅ Confirmed</option>
+            <option value="open">⏳ Open</option>
+            <option value="assigned">✅ Assigned</option>
             <option value="completed">🏁 Completed</option>
             <option value="cancelled">❌ Cancelled</option>
           </select>
@@ -987,58 +1018,161 @@
 <script>
 /* ============================================================
    CONTRACTOR CALENDAR — JavaScript Logic
+   Ticket data sourced from: /api/fetchTicketDetailsContractor
    ============================================================ */
 
 /* ── State ──────────────────────────────────────────────── */
 const today        = new Date();
-let   viewDate     = new Date(today);      // currently viewed month/week
-let   currentView  = 'month';              // 'month' | 'week'
-let   selectedDateKey = null;              // 'YYYY-MM-DD'
+let   viewDate     = new Date(today);
+let   currentView  = 'month';
+let   selectedDateKey = null;
 let   searchQuery  = '';
 let   editingEventId = null;
 
-/* ── Sample Data (replace with DB API calls) ─────────────── */
-/*
-  DB Table: contractor_services
-  Columns:
-    id          INT PRIMARY KEY AUTO_INCREMENT
-    user_id     INT (FK to users)
-    title       VARCHAR(120)
-    client      VARCHAR(120)
-    type        VARCHAR(50)
-    date        DATE         -- YYYY-MM-DD
-    time        TIME         -- HH:MM
-    duration    DECIMAL(4,1) -- hours
-    status      ENUM('pending','confirmed','completed','cancelled')
-    location    VARCHAR(200)
-    notes       TEXT
-    created_at  DATETIME DEFAULT CURRENT_TIMESTAMP
-*/
-let EVENTS = [
-  { id: 1,  title: 'Electrical Panel Upgrade',  client: 'Marco Reyes',      type: 'Electrical', date: fmtDate(today, 0),   time: '08:00', duration: 3,   status: 'confirmed', location: '45 Rizal Ave, Makati',     notes: 'Replace main breaker.' },
-  { id: 2,  title: 'Kitchen Plumbing Repair',   client: 'Ana Santos',       type: 'Plumbing',   date: fmtDate(today, 0),   time: '13:00', duration: 2,   status: 'pending',   location: '12 Luna St, Pasig',        notes: 'Leaking sink under cabinet.' },
-  { id: 3,  title: 'Office Partition Build',    client: 'TechStart Corp',   type: 'Carpentry',  date: fmtDate(today, 1),   time: '09:00', duration: 8,   status: 'confirmed', location: 'BGC Tower 3, Floor 12',    notes: '6 panels needed.' },
-  { id: 4,  title: 'Bedroom Repainting',        client: 'Lena Villanueva',  type: 'Painting',   date: fmtDate(today, 2),   time: '07:30', duration: 5,   status: 'pending',   location: '78 Mabini Rd, Caloocan',   notes: 'Light gray color scheme.' },
-  { id: 5,  title: 'AC Unit Installation',      client: 'Hotel Grandview',  type: 'HVAC',       date: fmtDate(today, 3),   time: '10:00', duration: 4,   status: 'confirmed', location: 'Hotel Grandview, Suite 201', notes: '2 window-type units.' },
-  { id: 6,  title: 'Roof Leak Patching',        client: 'Roy Castillo',     type: 'Roofing',    date: fmtDate(today, 5),   time: '06:00', duration: 6,   status: 'pending',   location: '5 Sampaguita St, QC',      notes: 'Two leak points identified.' },
-  { id: 7,  title: 'Deep Cleaning Service',     client: 'Office Hub PH',    type: 'Cleaning',   date: fmtDate(today, 5),   time: '14:00', duration: 3,   status: 'confirmed', location: 'Ortigas Complex Bldg B',   notes: 'Full office, 3 floors.' },
-  { id: 8,  title: 'Bathroom Tile Replacement', client: 'Maria Gonzales',   type: 'Other',      date: fmtDate(today, 7),   time: '09:00', duration: 5,   status: 'pending',   location: '33 Kamuning, QC',          notes: '12 sqm area.' },
-  { id: 9,  title: 'Wiring Inspection',         client: 'BrightKids School',type: 'Electrical', date: fmtDate(today, -2),  time: '07:00', duration: 4,   status: 'completed', location: 'Fairview, QC',             notes: 'Annual safety check.' },
-  { id: 10, title: 'Facade Painting',           client: 'SM Property',      type: 'Painting',   date: fmtDate(today, -4),  time: '06:00', duration: 10,  status: 'completed', location: 'Cubao Branch',             notes: '200 sqm exterior.' },
-  { id: 11, title: 'Pipe Rerouting',            client: 'Danny Lim',        type: 'Plumbing',   date: fmtDate(today, 10),  time: '08:00', duration: 3,   status: 'pending',   location: '9 Agno St, Manila',        notes: 'Basement pipes.' },
-  { id: 12, title: 'Gate Installation',         client: 'Forbes Park HOA',  type: 'Carpentry',  date: fmtDate(today, 12),  time: '08:00', duration: 6,   status: 'cancelled', location: 'Forbes Park, Makati',      notes: 'Client postponed.' },
-  { id: 13, title: 'HVAC Maintenance',          client: 'Ayala Malls',      type: 'HVAC',       date: fmtDate(today, 14),  time: '07:00', duration: 8,   status: 'confirmed', location: 'Mall of Asia Branch',      notes: 'Quarterly schedule.' },
-  { id: 14, title: 'Ceiling Repair',            client: 'Grace Dela Torre', type: 'Carpentry',  date: fmtDate(today, 14),  time: '13:00', duration: 3,   status: 'pending',   location: '21 Espana Blvd, Manila',   notes: 'Damaged drywall section.' },
-  { id: 15, title: 'Solar Panel Install',       client: 'EcoHomes PH',      type: 'Electrical', date: fmtDate(today, 18),  time: '08:00', duration: 12,  status: 'confirmed', location: 'Dasmariñas Village',       notes: '12 panels, grid-tie system.' },
-];
+/* ── API Data Store ──────────────────────────────────────── */
+let EVENTS = [];   // populated by fetchTickets()
+let nextId = 1000; // for locally added events
 
-let nextId = 16;
+/* ── API Field Mapping ───────────────────────────────────── */
+/*
+  /api/fetchTicketDetailsContractor returns:
+    id               → event.id
+    customer_name    → event.client
+    type             → event.type
+    sub_type         → event.subType
+    description      → event.title  (fallback if title is null)
+    title            → event.title  (preferred)
+    state            → event.status  ('open' | 'assigned' | 'completed' | 'cancelled')
+    order_date       → event.date   (normalized to YYYY-MM-DD)
+    reservation_date → event.date   (used when available and valid)
+    reservation_low  → event.time   (start of reservation window)
+    reservation_high → event.endTime
+    address          → event.location
+    phone_number     → event.phone
+*/
+
+/**
+ * Normalises a date string from the API to YYYY-MM-DD.
+ * Handles formats: YYYY-MM-DD, DD/MM/YYYY, and catches absurd values
+ * (e.g. "275760-05-24") by falling back to order_date.
+ */
+function normaliseDate(dateStr, fallback) {
+  if (!dateStr) return fallback;
+
+  // DD/MM/YYYY
+  if (/^\d{2}\/\d{2}\/\d{4}$/.test(dateStr)) {
+    const [d, m, y] = dateStr.split('/');
+    return `${y}-${m}-${d}`;
+  }
+
+  // YYYY-MM-DD — validate year is sensible (<= 9999)
+  if (/^\d{4}-\d{2}-\d{2}$/.test(dateStr)) {
+    const year = parseInt(dateStr.split('-')[0], 10);
+    if (year > 9999) return fallback;
+    return dateStr;
+  }
+
+  return fallback;
+}
+
+/**
+ * Normalise order_date (may be DD/MM/YYYY or YYYY-MM-DD).
+ */
+function normaliseOrderDate(dateStr) {
+  return normaliseDate(dateStr, todayKey());
+}
+
+/**
+ * Map a raw API ticket object to the internal event shape.
+ */
+function mapTicketToEvent(ticket) {
+  const orderDate  = normaliseOrderDate(ticket.order_date);
+  // Prefer reservation_date if it exists and is valid
+  const eventDate  = normaliseDate(ticket.reservation_date, orderDate);
+
+  // Title: use ticket.title if set, otherwise build from type + sub_type + description
+  const title = ticket.title
+    ? ticket.title
+    : [ticket.type, ticket.sub_type, ticket.description].filter(Boolean).join(' – ');
+
+  // Time: use reservation_low if present, otherwise default to 08:00
+  const time = ticket.reservation_low || '08:00';
+
+  return {
+    id:         ticket.id,
+    title:      title,
+    client:     ticket.customer_name || 'Unknown Client',
+    type:       ticket.type || 'Other',
+    subType:    ticket.sub_type || '',
+    date:       eventDate,
+    time:       time,
+    endTime:    ticket.reservation_high || null,
+    duration:   ticket.reservation_high ? calcDuration(time, ticket.reservation_high) : 1,
+    status:     ticket.state || 'open',
+    location:   ticket.address || '',
+    phone:      ticket.phone_number || '',
+    notes:      ticket.description || '',
+    // Keep original for reference
+    _raw: ticket,
+  };
+}
+
+function calcDuration(startTime, endTime) {
+  if (!startTime || !endTime) return 1;
+  try {
+    const [sh, sm] = startTime.split(':').map(Number);
+    const [eh, em] = endTime.split(':').map(Number);
+    const diff = (eh * 60 + em) - (sh * 60 + sm);
+    return diff > 0 ? diff / 60 : 1;
+  } catch { return 1; }
+}
+
+/* ── Fetch Tickets from API ─────────────────────────────── */
+async function fetchTickets() {
+  try {
+    showCalendarLoading();
+    const res  = await fetch('/api/fetchTicketDetailsContractor');
+    if (!res.ok) throw new Error(`HTTP ${res.status}: ${res.statusText}`);
+    const data = await res.json();
+    EVENTS = data.map(mapTicketToEvent);
+    nextId = Math.max(...EVENTS.map(e => e.id), 999) + 1;
+    renderCalendar();
+    updateTodayStats();
+    // Auto-select today
+    selectDate(todayKey());
+    showToast(`${EVENTS.length} ticket${EVENTS.length === 1 ? '' : 's'} loaded`, 'info');
+  } catch (err) {
+    console.error('fetchTickets error:', err);
+    showCalendarError(err.message);
+    showToast('Failed to load tickets. Check console for details.', 'error');
+  }
+}
+
+function showCalendarLoading() {
+  document.getElementById('calendarBody').innerHTML = `
+    <div class="cal-loading">
+      <div class="cal-loading-spinner"></div>
+      <div class="cal-loading-text">Loading tickets from server…</div>
+    </div>`;
+  document.getElementById('calSummaryFooter').textContent = 'Loading…';
+}
+
+function showCalendarError(msg) {
+  document.getElementById('calendarBody').innerHTML = `
+    <div class="cal-error">
+      <span class="cal-error-icon">⚠️</span>
+      <div class="cal-error-title">Failed to load tickets</div>
+      <div class="cal-error-sub">${msg}</div>
+      <button class="btn btn-primary btn-sm" onclick="fetchTickets()">↺ Retry</button>
+    </div>`;
+  document.getElementById('calSummaryFooter').textContent = 'Load error';
+}
 
 /* ── Helpers ─────────────────────────────────────────────── */
 function fmtDate(base, offsetDays) {
   const d = new Date(base);
   d.setDate(d.getDate() + offsetDays);
-  return d.toISOString().split('T')[0]; // 'YYYY-MM-DD'
+  return d.toISOString().split('T')[0];
 }
 
 function toDateKey(year, month, day) {
@@ -1056,6 +1190,7 @@ function formatShortDate(dateKey) {
 }
 
 function formatTime12(timeStr) {
+  if (!timeStr) return '—';
   const [h, m] = timeStr.split(':').map(Number);
   const period = h >= 12 ? 'PM' : 'AM';
   const h12    = h % 12 || 12;
@@ -1063,6 +1198,7 @@ function formatTime12(timeStr) {
 }
 
 function getEndTime(timeStr, duration) {
+  if (!timeStr) return '—';
   const [h, m] = timeStr.split(':').map(Number);
   const total  = h * 60 + m + duration * 60;
   const eh = Math.floor(total / 60) % 24;
@@ -1091,21 +1227,24 @@ function eventsForMonth(year, month) {
 }
 
 function statusDotClass(status) {
-  return { pending:'dot-gold', confirmed:'dot-green', completed:'dot-blue', cancelled:'dot-maroon' }[status] || 'dot-gold';
+  return { open:'dot-gold', assigned:'dot-green', completed:'dot-blue', cancelled:'dot-maroon' }[status] || 'dot-gold';
 }
 
 function statusBadge(status) {
   const map = {
-    pending:   '<span class="badge badge-warning badge-dot">Pending</span>',
-    confirmed: '<span class="badge badge-success badge-dot">Confirmed</span>',
+    open:      '<span class="badge badge-warning badge-dot">Open</span>',
+    assigned:  '<span class="badge badge-success badge-dot">Assigned</span>',
     completed: '<span class="badge badge-info badge-dot">Completed</span>',
     cancelled: '<span class="badge badge-danger badge-dot">Cancelled</span>',
   };
-  return map[status] || '';
+  return map[status] || `<span class="badge badge-warning badge-dot">${status}</span>`;
 }
 
 function typeIcon(type) {
-  const map = { Electrical:'⚡', Plumbing:'🔧', Carpentry:'🪚', Painting:'🎨', Cleaning:'🧹', HVAC:'❄️', Roofing:'🏠', Other:'🔩' };
+  const map = {
+    Electrical:'⚡', Plumbing:'🔧', Carpentry:'🪚', Painting:'🎨',
+    Cleaning:'🧹', HVAC:'❄️', Roofing:'🏠', Maintenance:'🛠️', Other:'🔩'
+  };
   return map[type] || '🔩';
 }
 
@@ -1150,36 +1289,29 @@ function showToast(msg, type = 'success') {
 
 /* ── Init ────────────────────────────────────────────────── */
 function initPage() {
-  // Sidebar state
   if (localStorage.getItem('sidebarCollapsed') === '1') {
     document.getElementById('sidebar').classList.add('collapsed');
     document.getElementById('mainContent').classList.add('expanded');
   }
 
-  // Header date chip
   document.getElementById('headerDateChip').textContent =
     today.toLocaleDateString('en-US', { weekday:'short', month:'short', day:'numeric', year:'numeric' });
 
-  // Today card
   document.getElementById('todayCardDate').textContent =
     today.toLocaleDateString('en-US', { weekday:'long', month:'long', day:'numeric' });
   document.getElementById('todayCardSub').textContent =
     today.toLocaleDateString('en-US', { year:'numeric' });
 
-  updateTodayStats();
-  renderCalendar();
-
-  // Auto-select today
-  const tk = todayKey();
-  selectDate(tk);
+  // Fetch tickets from API — this populates EVENTS and triggers render
+  fetchTickets();
 }
 
 /* ── Today Stats ─────────────────────────────────────────── */
 function updateTodayStats() {
   const evts = EVENTS.filter(e => e.date === todayKey());
   document.getElementById('todayCount').textContent     = evts.length;
-  document.getElementById('todayPending').textContent   = evts.filter(e => e.status === 'pending').length;
-  document.getElementById('todayConfirmed').textContent = evts.filter(e => e.status === 'confirmed').length;
+  document.getElementById('todayPending').textContent   = evts.filter(e => e.status === 'open').length;
+  document.getElementById('todayConfirmed').textContent = evts.filter(e => e.status === 'assigned').length;
 }
 
 /* ── Month Summary ───────────────────────────────────────── */
@@ -1189,12 +1321,13 @@ function updateMonthSummary() {
   const evts = eventsForMonth(y, m);
 
   document.getElementById('sumTotal').textContent     = evts.length;
-  document.getElementById('sumPending').textContent   = evts.filter(e=>e.status==='pending').length;
-  document.getElementById('sumConfirmed').textContent = evts.filter(e=>e.status==='confirmed').length;
+  document.getElementById('sumPending').textContent   = evts.filter(e=>e.status==='open').length;
+  document.getElementById('sumConfirmed').textContent = evts.filter(e=>e.status==='assigned').length;
   document.getElementById('sumCompleted').textContent = evts.filter(e=>e.status==='completed').length;
   document.getElementById('sumCancelled').textContent = evts.filter(e=>e.status==='cancelled').length;
 
-  document.getElementById('calSummaryFooter').textContent = `${evts.length} service${evts.length===1?'':'s'} this ${currentView==='week'?'week':'month'}`;
+  document.getElementById('calSummaryFooter').textContent =
+    `${evts.length} ticket${evts.length===1?'':'s'} this ${currentView==='week'?'week':'month'}`;
 }
 
 /* ── Render Calendar ─────────────────────────────────────── */
@@ -1219,19 +1352,15 @@ function renderMonthView(year, month) {
   const daysInM  = new Date(year, month+1, 0).getDate();
   const daysInPM = new Date(year, month, 0).getDate();
 
-  // Show weekday header (already in HTML), hide week-specific one
   document.querySelector('.cal-weekdays').style.display = 'grid';
 
   let html = `<div class="cal-grid fade-swap">`;
 
-  // Previous month padding
   for (let i = firstDay - 1; i >= 0; i--) {
-    const d   = daysInPM - i;
-    const key = toDateKey(year, month-1, d);
+    const d = daysInPM - i;
     html += `<div class="cal-day other-month"><span class="day-num">${d}</span></div>`;
   }
 
-  // Current month
   for (let d = 1; d <= daysInM; d++) {
     const key   = toDateKey(year, month, d);
     const evts  = EVENTS.filter(e => e.date === key);
@@ -1241,7 +1370,6 @@ function renderMonthView(year, month) {
     if (isT)   cls += ' today';
     if (isSel) cls += ' selected';
 
-    // Dots (max 3)
     let dots = '';
     const show = evts.slice(0, 3);
     show.forEach(e => {
@@ -1250,13 +1378,12 @@ function renderMonthView(year, month) {
     if (evts.length > 3) dots += `<div class="dot-more">+${evts.length-3}</div>`;
 
     html += `
-      <div class="${cls}" onclick="selectDate('${key}')" title="${evts.length} service${evts.length===1?'':'s'}">
+      <div class="${cls}" onclick="selectDate('${key}')" title="${evts.length} ticket${evts.length===1?'':'s'}">
         <span class="day-num">${d}</span>
         <div class="dot-wrap">${dots}</div>
       </div>`;
   }
 
-  // Next month padding
   const totalCells = firstDay + daysInM;
   const remaining  = totalCells % 7 === 0 ? 0 : 7 - (totalCells % 7);
   for (let d = 1; d <= remaining; d++) {
@@ -1272,7 +1399,6 @@ function renderWeekView() {
   const body   = document.getElementById('calendarBody');
   document.querySelector('.cal-weekdays').style.display = 'none';
 
-  // Get start of week (Sunday)
   const dow   = viewDate.getDay();
   const start = new Date(viewDate);
   start.setDate(viewDate.getDate() - dow);
@@ -1289,17 +1415,15 @@ function renderWeekView() {
                        '12:00','13:00','14:00','15:00','16:00','17:00',
                        '18:00','19:00','20:00'];
 
-  // Update month label to week range
   const s = days[0].toLocaleDateString('en-US',{month:'short',day:'numeric'});
   const e = days[6].toLocaleDateString('en-US',{month:'short',day:'numeric'});
   document.getElementById('calMonthLabel').textContent = `${s} – ${e}`;
 
   let html = `<div class="week-view fade-swap">`;
 
-  // Day headers
   html += `<div class="week-header-row"><div></div>`;
   days.forEach(d => {
-    const isT = d.toISOString().split('T')[0] === todayKey();
+    const isT   = d.toISOString().split('T')[0] === todayKey();
     const isSel = d.toISOString().split('T')[0] === selectedDateKey;
     html += `<div class="week-header-cell ${isT?'today':''}" style="${isSel?'border-bottom:2px solid var(--gold);':''}" onclick="selectDate('${d.toISOString().split('T')[0]}')">
       <div class="week-header-day-num">${d.getDate()}</div>
@@ -1308,7 +1432,6 @@ function renderWeekView() {
   });
   html += `</div>`;
 
-  // Time rows
   HOURS.forEach(hr => {
     html += `<div class="week-row"><div class="week-time-col">${formatTime12(hr+':00').replace(':00','')}</div>`;
     days.forEach(d => {
@@ -1335,20 +1458,14 @@ function switchView(view, btn) {
 
 /* ── Navigation ──────────────────────────────────────────── */
 function prevPeriod() {
-  if (currentView === 'month') {
-    viewDate.setMonth(viewDate.getMonth() - 1);
-  } else {
-    viewDate.setDate(viewDate.getDate() - 7);
-  }
+  if (currentView === 'month') viewDate.setMonth(viewDate.getMonth() - 1);
+  else viewDate.setDate(viewDate.getDate() - 7);
   renderCalendar();
 }
 
 function nextPeriod() {
-  if (currentView === 'month') {
-    viewDate.setMonth(viewDate.getMonth() + 1);
-  } else {
-    viewDate.setDate(viewDate.getDate() + 7);
-  }
+  if (currentView === 'month') viewDate.setMonth(viewDate.getMonth() + 1);
+  else viewDate.setDate(viewDate.getDate() + 7);
   renderCalendar();
 }
 
@@ -1362,17 +1479,16 @@ function jumpToToday() {
 /* ── Select Date ─────────────────────────────────────────── */
 function selectDate(dateKey) {
   selectedDateKey = dateKey;
-  renderCalendar(); // re-render to update selection
+  renderCalendar();
   renderDayPanel(dateKey);
 
-  // Update subtitle
   document.getElementById('selectedDateLabel').textContent =
     `Viewing: ${formatDisplayDate(dateKey)}`;
-  document.getElementById('dayPanelTitle').textContent    = formatShortDate(dateKey);
+  document.getElementById('dayPanelTitle').textContent = formatShortDate(dateKey);
 
   const evts = eventsForDate(dateKey);
   document.getElementById('dayPanelSub').textContent =
-    `${evts.length} service${evts.length===1?'':'s'} scheduled`;
+    `${evts.length} ticket${evts.length===1?'':'s'} scheduled`;
   document.getElementById('addForDayBtn').style.display = 'flex';
 }
 
@@ -1385,7 +1501,7 @@ function renderDayPanel(dateKey) {
     body.innerHTML = `
       <div class="empty-day">
         <span class="empty-day-icon">🗓️</span>
-        <div class="empty-day-title">No services on this day</div>
+        <div class="empty-day-title">No tickets on this day</div>
         <div class="empty-day-sub">
           <button class="btn btn-primary btn-sm" style="margin-top:14px;" onclick="openAddEventModal('${dateKey}')">
             ＋ Schedule a Service
@@ -1407,8 +1523,8 @@ function renderDayPanel(dateKey) {
         <div class="event-client">👤 ${e.client}</div>
         <div class="event-meta">
           ${statusBadge(e.status)}
-          <span class="event-tag">${e.type}</span>
-          ${e.location ? `<span class="event-tag">📍 ${e.location.split(',')[0]}</span>` : ''}
+          <span class="event-tag">${e.type}${e.subType ? ' · ' + e.subType : ''}</span>
+          ${e.location && e.location !== 'not required' ? `<span class="event-tag">📍 ${e.location.split(',')[0]}</span>` : ''}
         </div>
       </div>
       <div class="event-actions">
@@ -1423,19 +1539,24 @@ function openEventDetail(id) {
   const e = EVENTS.find(x => x.id === id);
   if (!e) return;
 
+  const timeRange = e.endTime
+    ? `${formatTime12(e.time)} – ${formatTime12(e.endTime)}`
+    : formatTime12(e.time);
+
   document.getElementById('detailModalTitle').textContent = e.title;
   document.getElementById('eventDetailBody').innerHTML = `
     <div class="evt-modal-icon">${typeIcon(e.type)}</div>
     <div style="font-size:15px;font-weight:600;color:var(--white);margin-bottom:4px;">${e.title}</div>
-    <div style="font-size:12px;color:var(--text-muted);margin-bottom:12px;">${typeIcon(e.type)} ${e.type} Service</div>
+    <div style="font-size:12px;color:var(--text-muted);margin-bottom:12px;">${typeIcon(e.type)} ${e.type}${e.subType ? ' · ' + e.subType : ''}</div>
     ${statusBadge(e.status)}
     <div class="evt-modal-info">
       <div class="emi-item"><div class="emi-label">Client</div><div class="emi-value">👤 ${e.client}</div></div>
       <div class="emi-item"><div class="emi-label">Date</div><div class="emi-value">📅 ${formatDisplayDate(e.date)}</div></div>
-      <div class="emi-item"><div class="emi-label">Time</div><div class="emi-value">🕐 ${formatTime12(e.time)} – ${getEndTime(e.time, e.duration)}</div></div>
+      <div class="emi-item"><div class="emi-label">Time</div><div class="emi-value">🕐 ${timeRange}</div></div>
       <div class="emi-item"><div class="emi-label">Duration</div><div class="emi-value">⏱ ${e.duration} hour${e.duration===1?'':'s'}</div></div>
-      ${e.location ? `<div class="emi-item" style="grid-column:1/-1;"><div class="emi-label">Location</div><div class="emi-value">📍 ${e.location}</div></div>` : ''}
-      ${e.notes    ? `<div class="emi-item" style="grid-column:1/-1;"><div class="emi-label">Notes</div><div class="emi-value" style="font-weight:400;color:var(--text-secondary);font-size:12px;">${e.notes}</div></div>` : ''}
+      ${e.phone ? `<div class="emi-item"><div class="emi-label">Phone</div><div class="emi-value">📞 ${e.phone}</div></div>` : ''}
+      ${e.location && e.location !== 'not required' ? `<div class="emi-item" style="grid-column:1/-1;"><div class="emi-label">Location</div><div class="emi-value">📍 ${e.location}</div></div>` : ''}
+      ${e.notes ? `<div class="emi-item" style="grid-column:1/-1;"><div class="emi-label">Description / Notes</div><div class="emi-value" style="font-weight:400;color:var(--text-secondary);font-size:12px;">${e.notes}</div></div>` : ''}
     </div>`;
 
   document.getElementById('eventDetailFooter').innerHTML = `
@@ -1473,7 +1594,7 @@ function openEditEvent(id) {
   editingEventId = id;
   document.getElementById('addEventModalTitle').textContent = 'Edit Service';
   document.getElementById('evtSaveBtn').textContent = 'Update Service';
-  document.getElementById('evtEditId').value = id;
+  document.getElementById('evtEditId').value   = id;
   document.getElementById('evtName').value     = e.title;
   document.getElementById('evtClient').value   = e.client;
   document.getElementById('evtType').value     = e.type;
@@ -1497,31 +1618,31 @@ function handleSaveEvent(event) {
     title:    document.getElementById('evtName').value.trim(),
     client:   document.getElementById('evtClient').value.trim(),
     type:     document.getElementById('evtType').value,
+    subType:  '',
     date:     document.getElementById('evtDate').value,
     time:     document.getElementById('evtTime').value,
+    endTime:  null,
     duration: parseFloat(document.getElementById('evtDuration').value) || 1,
     status:   document.getElementById('evtStatus').value,
     location: document.getElementById('evtLocation').value.trim(),
+    phone:    '',
     notes:    document.getElementById('evtNotes').value.trim(),
   };
 
   /*
-   DB Integration:
-   POST  /api/services          → INSERT new service
-   PUT   /api/services/:id      → UPDATE existing service
+   DB / API Integration:
+   POST  /api/services      → INSERT new ticket
+   PUT   /api/services/:id  → UPDATE existing ticket
    Body: { user_id, ...payload }
-   Response: { success: true, id: newId }
-  */
+   */
 
   if (editingEventId) {
-    // UPDATE existing
     const idx = EVENTS.findIndex(e => e.id === editingEventId);
     if (idx > -1) {
       EVENTS[idx] = { ...EVENTS[idx], ...payload };
       showToast(`"${payload.title}" updated successfully!`, 'success');
     }
   } else {
-    // INSERT new
     payload.id = nextId++;
     EVENTS.push(payload);
     showToast(`"${payload.title}" added to schedule!`, 'success');
@@ -1530,8 +1651,6 @@ function handleSaveEvent(event) {
   closeModal('addEventModal');
   renderCalendar();
   updateTodayStats();
-
-  // Refresh day panel if that date is selected
   if (selectedDateKey === payload.date) selectDate(payload.date);
 }
 
@@ -1543,9 +1662,9 @@ function deleteEvent(id) {
   if (!confirm(`Delete "${e.title}"? This cannot be undone.`)) return;
 
   /*
-   DB Integration:
+   DB / API Integration:
    DELETE /api/services/:id
-  */
+   */
 
   EVENTS = EVENTS.filter(x => x.id !== id);
   showToast(`"${e.title}" removed from schedule.`, 'warning');
@@ -1559,7 +1678,6 @@ function deleteEvent(id) {
 function handleSearch(val) {
   searchQuery = val.trim();
   if (selectedDateKey) renderDayPanel(selectedDateKey);
-  // Highlight in calendar footer
   if (searchQuery) {
     const results = EVENTS.filter(e =>
       e.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
