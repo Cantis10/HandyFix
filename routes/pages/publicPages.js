@@ -13,7 +13,7 @@ app.get("/", (req, res) => {
       return res.redirect("/user/");
     }
     if (decoded.role === "contractor") {
-      return res.redirect("/contractor/");
+      return res.redirect("/contract/");
     }
     if (decoded.role === "admin") {
       return res.redirect("/admin/dashboard");
